@@ -35,14 +35,22 @@ export default function Contact() {
       {/* Soft divider top */}
       <div className="absolute top-0 inset-x-0 h-20 bg-linear-to-b from-accent-primary/3 via-transparent to-transparent pointer-events-none"></div>
 
-      {/* Full section background image */}
-      <div
-        className="absolute inset-0 bg-cover bg-center pointer-events-none"
-        style={{ backgroundImage: "url('/hero-revolving-ai.png')" }}
-      ></div>
+      {/* Premium cinematic background - different from hero */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          animate={{ opacity: [0.4, 0.6, 0.4] }}
+          transition={{ duration: 12, repeat: Infinity }}
+          className="absolute top-1/2 right-0 w-96 h-96 bg-accent-primary/8 rounded-full blur-3xl -translate-y-1/2"
+        />
+        <motion.div
+          animate={{ opacity: [0.2, 0.4, 0.2] }}
+          transition={{ duration: 14, repeat: Infinity, delay: 3 }}
+          className="absolute bottom-0 left-1/4 w-80 h-80 bg-accent-secondary/6 rounded-full blur-3xl"
+        />
+      </div>
 
       {/* Background gradient */}
-      <div className="absolute inset-0 bg-linear-to-b from-black/76 via-black/66 to-black/82"></div>
+      <div className="absolute inset-0 bg-linear-to-b from-black/50 via-black/60 to-black/70 pointer-events-none"></div>
 
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Section header */}

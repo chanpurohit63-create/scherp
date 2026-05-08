@@ -39,13 +39,38 @@ export default function Portfolio() {
       {/* Soft divider top */}
       <div className="absolute top-0 inset-x-0 h-20 bg-linear-to-b from-accent-primary/3 via-transparent to-transparent pointer-events-none"></div>
 
-      {/* Full section background image */}
-      <div
-        className="absolute inset-0 bg-cover bg-center pointer-events-none"
-        style={{ backgroundImage: "url('/hero-revolving-ai.png')" }}
-      ></div>
+      {/* Thin animated orbit lines - subtle neural network feel */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Animated orbit circles */}
+        <motion.svg
+          className="absolute inset-0 w-full h-full"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+        >
+          <circle cx="50%" cy="50%" r="20%" fill="none" stroke="rgba(251, 191, 36, 0.08)" strokeWidth="1" />
+          <circle cx="50%" cy="50%" r="35%" fill="none" stroke="rgba(59, 130, 246, 0.06)" strokeWidth="1" />
+          <circle cx="50%" cy="50%" r="50%" fill="none" stroke="rgba(251, 191, 36, 0.04)" strokeWidth="1" />
+        </motion.svg>
 
-      <div className="absolute inset-0 bg-linear-to-b from-black/64 via-black/52 to-black/68 pointer-events-none"></div>
+        {/* Subtle grid pattern */}
+        <motion.div
+          animate={{ opacity: [0.15, 0.25, 0.15] }}
+          transition={{ duration: 6, repeat: Infinity }}
+          className="absolute inset-0 opacity-15"
+          style={{
+            backgroundImage: `
+              linear-gradient(rgba(251, 191, 36, 0.05) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(251, 191, 36, 0.05) 1px, transparent 1px)
+            `,
+            backgroundSize: '50px 50px'
+          }}
+        ></motion.div>
+      </div>
+
+      {/* Minimal dark background - clean and focused */}
+      <div className="absolute inset-0 bg-background pointer-events-none"></div>
+
+      <div className="absolute inset-0 bg-linear-to-b from-background/95 via-background/98 to-background pointer-events-none"></div>
 
       <div className="max-w-6xl mx-auto relative z-10">
         {/* Section header */}

@@ -55,14 +55,23 @@ export default function Services() {
 
   return (
     <section id="services" className="py-24 px-6 relative overflow-hidden">
-      {/* Full section background image */}
-      <div
-        className="absolute inset-0 bg-cover bg-center pointer-events-none"
-        style={{ backgroundImage: "url('/hero-revolving-ai.png')" }}
-      ></div>
+      {/* Subtle particle background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          animate={{ opacity: [0.3, 0.5, 0.3] }}
+          transition={{ duration: 8, repeat: Infinity }}
+          className="absolute top-10 right-10 w-72 h-72 bg-accent-secondary/8 rounded-full blur-3xl"
+        />
+        <motion.div
+          animate={{ opacity: [0.2, 0.4, 0.2] }}
+          transition={{ duration: 10, repeat: Infinity, delay: 2 }}
+          className="absolute bottom-20 left-20 w-80 h-80 bg-accent-primary/5 rounded-full blur-3xl"
+        />
+      </div>
 
-      {/* Dark overlay for high text contrast */}
-      <div className="absolute inset-0 bg-linear-to-b from-black/82 via-black/72 to-black/84 pointer-events-none"></div>
+      {/* Clean dark background */}
+      <div className="absolute inset-0 bg-background pointer-events-none"></div>
+
       <div className="max-w-6xl mx-auto relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 50 }}

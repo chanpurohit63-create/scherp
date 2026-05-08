@@ -42,14 +42,22 @@ export default function Testimonials() {
       {/* Soft divider top */}
       <div className="absolute top-0 inset-x-0 h-20 bg-linear-to-b from-accent-primary/3 via-transparent to-transparent pointer-events-none"></div>
 
-      {/* Full section background image */}
-      <div
-        className="absolute inset-0 bg-cover bg-center pointer-events-none"
-        style={{ backgroundImage: "url('/hero-revolving-ai.png')" }}
-      ></div>
+      {/* Subtle particles for premium feel */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          animate={{ opacity: [0.3, 0.5, 0.3] }}
+          transition={{ duration: 9, repeat: Infinity }}
+          className="absolute -top-40 right-20 w-96 h-96 bg-accent-secondary/10 rounded-full blur-3xl"
+        />
+        <motion.div
+          animate={{ opacity: [0.15, 0.35, 0.15] }}
+          transition={{ duration: 11, repeat: Infinity, delay: 4 }}
+          className="absolute -bottom-32 -left-32 w-80 h-80 bg-accent-primary/6 rounded-full blur-3xl"
+        />
+      </div>
 
       {/* Background gradient */}
-      <div className="absolute inset-0 bg-linear-to-b from-black/74 via-black/64 to-black/80 pointer-events-none"></div>
+      <div className="absolute inset-0 bg-linear-to-b from-black/40 via-black/50 to-black/60 pointer-events-none"></div>
       
 
       <div className="max-w-3xl mx-auto relative z-10">

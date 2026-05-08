@@ -46,14 +46,18 @@ export default function About() {
       {/* Soft divider top */}
       <div className="absolute top-0 inset-x-0 h-20 bg-linear-to-b from-accent-primary/3 via-transparent to-transparent pointer-events-none"></div>
 
-      {/* Full section background image */}
-      <div
-        className="absolute inset-0 bg-cover bg-center pointer-events-none"
-        style={{ backgroundImage: "url('/hero-revolving-ai.png')" }}
-      ></div>
+      {/* Subtle gradient glow - very premium */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-radial-gradient" style={{
+          backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(251, 191, 36, 0.08) 0%, rgba(59, 130, 246, 0.04) 40%, transparent 70%)'
+        }}></div>
+      </div>
 
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-linear-to-b from-black/72 via-black/62 to-black/78 pointer-events-none"></div>
+      {/* Clean dark background */}
+      <div className="absolute inset-0 bg-background pointer-events-none"></div>
+
+      {/* Subtle gradient overlay */}
+      <div className="absolute inset-0 bg-linear-to-b from-background via-background/98 to-background pointer-events-none"></div>
 
       <div className="max-w-6xl mx-auto relative z-10">
         <motion.div
@@ -65,7 +69,7 @@ export default function About() {
         >
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">About Us</h2>
           <p className="text-lg text-text-secondary max-w-2xl mx-auto leading-relaxed">
-            As a startup, we move fast, think bold, and build with purpose. We are constantly exploring new ways to make healthcare more efficient, accessible, and intelligent through AI.
+            We believe healthcare should feel accessible, supportive, and human. That's why we're building AI tools designed to assist people — not replace them. Every solution we create puts care and compassion at the center.
           </p>
         </motion.div>
 
