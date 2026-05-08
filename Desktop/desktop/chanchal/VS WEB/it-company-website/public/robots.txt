@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /.next/
+Disallow: /admin/
+
+Sitemap: https://it-company-website-murex.vercel.app/sitemap.xml
+
+# Crawl delay to prevent server overload
+Crawl-delay: 2
