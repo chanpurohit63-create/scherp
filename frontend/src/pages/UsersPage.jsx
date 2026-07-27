@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import PageWrapper from '../components/PageWrapper'
-import { useAuth } from '../hooks/useAuth'
+import { useAuth } from '../hooks/useAuth.jsx'
 import { listResources, createResource, updateResource, deleteResource } from '../api'
+import toast from 'react-hot-toast'
 
 export default function UsersPage() {
   const auth = useAuth()
@@ -9,103 +10,89 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [form, setForm] = useState({ email: '', full_name: '', role: 'Student', password: '' })
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(0)
+  const pageSize = 10
 
-  useEffect(() => {
-    loadUsers()
-  }, [])
+  useEffect(() => { loadUsers() }, [page, search])
+
+  const buildQuery = () => {
+    const params = new URLSearchParams({ skip: page * pageSize, limit: pageSize })
+    if (search) params.set('query', search)
+    return params.toString()
+  }
 
   const loadUsers = async () => {
-    setLoading(true)
-    setError('')
-    try {
-      const data = await listResources(auth.token, 'users')
-      setUsers(data)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
+    setLoading(true); setError('')
+    try { const data = await listResources(auth.token, 'users', buildQuery()); setUsers(data) }
+    catch (err) { setError(err.message) } finally { setLoading(false) }
   }
 
   const handleCreate = async (event) => {
-    event.preventDefault()
-    setError('')
+    event.preventDefault(); setError('')
+    const toastId = toast.loading('Creating user...')
     try {
       await createResource(auth.token, 'users', form)
+      toast.success('User created!', { id: toastId })
       setForm({ email: '', full_name: '', role: 'Student', password: '' })
       await loadUsers()
-    } catch (err) {
-      setError(err.message)
-    }
+    } catch (err) { setError(err.message); toast.error(err.message, { id: toastId }) }
   }
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this user?')) return
-    try {
-      await deleteResource(auth.token, 'users', id)
-      await loadUsers()
-    } catch (err) {
-      setError(err.message)
-    }
+    try { await deleteResource(auth.token, 'users', id); toast.success('User deleted'); await loadUsers() }
+    catch (err) { toast.error(err.message) }
   }
 
   return (
     <PageWrapper title="User Management">
-      <section style={{ marginBottom: 24 }}>
+      <div className="card" style={{ marginBottom: 24 }}>
         <h2>Create User</h2>
-        <form onSubmit={handleCreate} style={{ display: 'grid', gap: 12, maxWidth: 520 }}>
-          <input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="Email" required />
-          <input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} placeholder="Full name" />
-          <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
-            <option value="Student">Student</option>
-            <option value="Teacher">Teacher</option>
-            <option value="Parent">Parent</option>
-            <option value="School Admin">School Admin</option>
-            <option value="Super Admin">Super Admin</option>
+        <form onSubmit={handleCreate} className="form-grid">
+          <input className="input" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="Email" required />
+          <input className="input" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} placeholder="Full name" />
+          <select className="input" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
+            <option value="Student">Student</option><option value="Teacher">Teacher</option><option value="Parent">Parent</option>
+            <option value="School Admin">School Admin</option><option value="Super Admin">Super Admin</option>
           </select>
-          <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Password" required />
-          <button type="submit" style={{ padding: '10px 16px' }}>Create</button>
+          <input className="input" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Password" required />
+          <div className="form-actions"><button className="btn btn-primary" type="submit">Create</button></div>
         </form>
-      </section>
-
-      <section>
-        <h2>Existing Users</h2>
+      </div>
+      <div className="card">
+        <div className="list-header">
+          <h2>Existing Users</h2>
+          <input className="input search-input" placeholder="Search..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(0) }} />
+        </div>
         {loading ? (
-          <p>Loading users...</p>
+          <div className="skeleton-list">{Array.from({ length: 5 }).map((_, i) => <div key={i} className="skeleton-row" />)}</div>
+        ) : users.length === 0 ? (
+          <div className="empty-state">No users found.</div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr>
-                <th style={thStyle}>ID</th>
-                <th style={thStyle}>Email</th>
-                <th style={thStyle}>Name</th>
-                <th style={thStyle}>Role</th>
-                <th style={thStyle}>Active</th>
-                <th style={thStyle}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr key={user.id}>
-                  <td style={tdStyle}>{user.id}</td>
-                  <td style={tdStyle}>{user.email}</td>
-                  <td style={tdStyle}>{user.full_name}</td>
-                  <td style={tdStyle}>{user.role}</td>
-                  <td style={tdStyle}>{String(user.is_active)}</td>
-                  <td style={tdStyle}>
-                    <button onClick={() => handleDelete(user.id)} style={{ padding: '6px 10px' }}>Delete</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="table-responsive">
+            <table className="data-table">
+              <thead><tr><th>ID</th><th>Email</th><th>Name</th><th>Role</th><th>Active</th><th>Actions</th></tr></thead>
+              <tbody>
+                {users.map((user) => (
+                  <tr key={user.id}>
+                    <td>{user.id}</td><td>{user.email}</td><td>{user.full_name}</td>
+                    <td><span className="role-badge">{user.role}</span></td>
+                    <td><span className="role-badge">{String(user.is_active)}</span></td>
+                    <td className="action-cell"><button className="btn btn-sm btn-danger" onClick={() => handleDelete(user.id)}>Delete</button></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
-      </section>
-
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+        <div className="pagination">
+          <button className="btn btn-sm" disabled={page === 0} onClick={() => setPage(page - 1)}>Previous</button>
+          <span>Page {page + 1}</span>
+          <button className="btn btn-sm" disabled={users.length < pageSize} onClick={() => setPage(page + 1)}>Next</button>
+        </div>
+      </div>
+      {error && <div className="error-banner">{error}</div>}
     </PageWrapper>
   )
 }
-
-const thStyle = { borderBottom: '1px solid #ddd', padding: 8, textAlign: 'left' }
-const tdStyle = { borderBottom: '1px solid #eee', padding: 8 }

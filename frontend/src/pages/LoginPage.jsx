@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { login, fetchProfile } from '../api'
-import { useAuth } from '../hooks/useAuth'
+import { useAuth } from '../hooks/useAuth.jsx'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -18,9 +18,14 @@ export default function LoginPage() {
     try {
       const data = await login(email, password)
       auth.login(data.access_token)
-      const profile = await fetchProfile(data.access_token)
+const profile = await fetchProfile(data.access_token)
       auth.setProfile(profile)
-      navigate('/dashboard')
+      // Redirect based on role
+      const role = profile.role
+      if (role === 'Student') navigate('/student/dashboard')
+      else if (role === 'Parent') navigate('/parent/dashboard')
+      else if (role === 'Teacher') navigate('/teacher/dashboard')
+      else navigate('/dashboard')
     } catch (err) {
       setError(err.message)
     } finally {

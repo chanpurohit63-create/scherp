@@ -1,6 +1,8 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from fastapi.staticfiles import StaticFiles
+import os
 from sqlmodel import SQLModel
 from . import models, schemas, auth, crud
 from .database import engine, init_db
@@ -20,6 +22,11 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 @app.on_event("startup")
 def on_startup():
     init_db()
+    os.makedirs("static/uploads", exist_ok=True)
+    if not app.router.routes:
+        pass
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 @app.post("/auth/register", response_model=schemas.UserRead)

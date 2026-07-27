@@ -12,7 +12,7 @@ class UserCreate(BaseModel):
 
 class UserRead(BaseModel):
     id: int
-    email: EmailStr
+    email: str
     full_name: Optional[str]
     role: str
     is_active: bool
@@ -63,6 +63,12 @@ class ParentRead(BaseModel):
         orm_mode = True
 
 
+class ParentProfileRead(ParentRead):
+    email: EmailStr
+    full_name: Optional[str]
+    role: str
+
+
 class ParentUpdate(BaseModel):
     phone: Optional[str] = None
     address: Optional[str] = None
@@ -84,6 +90,12 @@ class TeacherRead(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class TeacherProfileRead(TeacherRead):
+    email: EmailStr
+    full_name: Optional[str]
+    role: str
 
 
 class TeacherUpdate(BaseModel):
@@ -113,9 +125,16 @@ class StudentRead(BaseModel):
     status: str
     father_id: Optional[int]
     mother_id: Optional[int]
+    photo_path: Optional[str]
 
     class Config:
         orm_mode = True
+
+
+class StudentProfileRead(StudentRead):
+    email: EmailStr
+    full_name: Optional[str]
+    role: str
 
 
 class StudentUpdate(BaseModel):
@@ -126,6 +145,7 @@ class StudentUpdate(BaseModel):
     status: Optional[str] = None
     father_id: Optional[int] = None
     mother_id: Optional[int] = None
+    photo_path: Optional[str] = None
 
 
 class AcademicYearCreate(BaseModel):
@@ -319,6 +339,60 @@ class HomeworkUpdate(BaseModel):
     attachment_path: Optional[str] = None
 
 
+class HomeworkSubmissionCreate(BaseModel):
+    homework_id: int
+    student_id: int
+    attachment_path: Optional[str] = None
+    remarks: Optional[str] = None
+
+
+class HomeworkSubmissionRead(BaseModel):
+    id: int
+    homework_id: int
+    student_id: int
+    submitted_on: datetime
+    attachment_path: Optional[str]
+    remarks: Optional[str]
+    grade: Optional[str]
+    feedback: Optional[str]
+    status: str
+
+    class Config:
+        orm_mode = True
+
+
+class HomeworkSubmissionUpdate(BaseModel):
+    attachment_path: Optional[str] = None
+    remarks: Optional[str] = None
+    grade: Optional[str] = None
+    feedback: Optional[str] = None
+    status: Optional[str] = None
+
+
+class TeacherAttendanceCreate(BaseModel):
+    teacher_id: int
+    date: date
+    status: Optional[str] = "present"
+    remarks: Optional[str] = None
+
+
+class TeacherAttendanceRead(BaseModel):
+    id: int
+    teacher_id: int
+    date: date
+    status: str
+    remarks: Optional[str]
+
+    class Config:
+        orm_mode = True
+
+
+class TeacherAttendanceUpdate(BaseModel):
+    date: Optional[date] = None
+    status: Optional[str] = None
+    remarks: Optional[str] = None
+
+
 class ExamCreate(BaseModel):
     name: str
     academic_year_id: int
@@ -446,6 +520,8 @@ class NoticeCreate(BaseModel):
     content: Optional[str] = None
     target_roles: Optional[str] = None
     created_by: Optional[int] = None
+    scheduled_for: Optional[datetime] = None
+    attachments_path: Optional[str] = None
 
 
 class NoticeRead(BaseModel):
@@ -455,6 +531,8 @@ class NoticeRead(BaseModel):
     target_roles: Optional[str]
     created_by: Optional[int]
     created_on: datetime
+    scheduled_for: Optional[datetime]
+    attachments_path: Optional[str]
 
     class Config:
         orm_mode = True
@@ -464,6 +542,8 @@ class NoticeUpdate(BaseModel):
     title: Optional[str] = None
     content: Optional[str] = None
     target_roles: Optional[str] = None
+    scheduled_for: Optional[datetime] = None
+    attachments_path: Optional[str] = None
 
 
 class MessageCreate(BaseModel):
@@ -550,6 +630,43 @@ class CertificateUpdate(BaseModel):
     file_path: Optional[str] = None
 
 
+class SchoolSettingsRead(BaseModel):
+    id: int
+    school_name: Optional[str]
+    address: Optional[str]
+    phone: Optional[str]
+    email: Optional[str]
+    logo_path: Optional[str]
+    academic_year_id: Optional[int]
+
+    class Config:
+        orm_mode = True
+
+
+class SchoolSettingsUpdate(BaseModel):
+    school_name: Optional[str] = None
+    address: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    logo_path: Optional[str] = None
+    academic_year_id: Optional[int] = None
+
+
+class DashboardSummaryRead(BaseModel):
+    total_students: int
+    total_teachers: int
+    attendance_percentage: float
+    fee_collection: float
+    pending_fees: int
+    upcoming_exams: int
+    upcoming_events: int
+    notices: List[NoticeRead]
+    monthly_attendance: List[dict]
+    monthly_fee_collection: List[dict]
+    student_growth: List[dict]
+    exam_performance: List[dict]
+
+
 class DocumentCreate(BaseModel):
     owner_type: str
     owner_id: int
@@ -574,3 +691,79 @@ class DocumentUpdate(BaseModel):
     owner_id: Optional[int] = None
     name: Optional[str] = None
     file_path: Optional[str] = None
+
+
+class TimetableCreate(BaseModel):
+    class_id: int
+    section_id: Optional[int] = None
+    subject_id: int
+    teacher_id: int
+    day_of_week: int
+    period: int
+    start_time: Optional[str] = None
+    end_time: Optional[str] = None
+    room: Optional[str] = None
+    academic_year_id: int
+
+
+class TimetableRead(BaseModel):
+    id: int
+    class_id: int
+    section_id: Optional[int]
+    subject_id: int
+    teacher_id: int
+    day_of_week: int
+    period: int
+    start_time: Optional[str]
+    end_time: Optional[str]
+    room: Optional[str]
+    academic_year_id: int
+
+    class Config:
+        orm_mode = True
+
+
+class TimetableUpdate(BaseModel):
+    class_id: Optional[int] = None
+    section_id: Optional[int] = None
+    subject_id: Optional[int] = None
+    teacher_id: Optional[int] = None
+    day_of_week: Optional[int] = None
+    period: Optional[int] = None
+    start_time: Optional[str] = None
+    end_time: Optional[str] = None
+    room: Optional[str] = None
+    academic_year_id: Optional[int] = None
+
+
+class NotificationRead(BaseModel):
+    id: int
+    user_id: int
+    title: str
+    message: str
+    notification_type: Optional[str]
+    reference_id: Optional[int]
+    is_read: bool
+    created_on: datetime
+
+    class Config:
+        orm_mode = True
+
+
+class AuditLogRead(BaseModel):
+    id: int
+    user_id: Optional[int]
+    action: str
+    resource: Optional[str]
+    resource_id: Optional[int]
+    details: Optional[str]
+    ip_address: Optional[str]
+    created_on: datetime
+
+    class Config:
+        orm_mode = True
+
+
+class PasswordChange(BaseModel):
+    current_password: str
+    new_password: str

@@ -1,0 +1,92 @@
+import React, { useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
+import ParentLayout from '../components/ParentLayout'
+import { useAuth } from '../hooks/useAuth.jsx'
+import { listResources, downloadFile } from '../api'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+
+export default function ParentAttendancePage() {
+  const auth = useAuth()
+  const { studentId } = useParams()
+  const [data, setData] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => { loadAttendance() }, [studentId])
+
+  const loadAttendance = async () => {
+    try {
+      const d = await listResources(auth.token, `portal/parent/children/${studentId}/attendance`)
+      setData(d)
+    } catch (err) { console.error(err) }
+    finally { setLoading(false) }
+  }
+
+  const handleDownload = () => {
+    downloadFile(auth.token, `portal/parent/children/${studentId}/attendance/download`, 'attendance.csv')
+  }
+
+  if (loading) {
+    return <ParentLayout title="Attendance"><div className="skeleton-card" style={{ height: 200 }} /></ParentLayout>
+  }
+
+  const monthlyData = (data?.monthly || []).map((d) => ({
+    name: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.month - 1],
+    present: d.present,
+    absent: d.total - d.present,
+  }))
+
+  return (
+    <ParentLayout title="Attendance">
+      <div className="metrics-grid">
+        <div className="metric-card" style={{ borderTop: '3px solid #4f46e5' }}>
+          <span className="metric-label">Total Days</span>
+          <span className="metric-value">{data?.total || 0}</span>
+        </div>
+        <div className="metric-card" style={{ borderTop: '3px solid #10b981' }}>
+          <span className="metric-label">Present</span>
+          <span className="metric-value">{data?.present || 0}</span>
+        </div>
+        <div className="metric-card" style={{ borderTop: '3px solid #f59e0b' }}>
+          <span className="metric-label">Percentage</span>
+          <span className="metric-value">{data?.percentage || 0}%</span>
+        </div>
+        <div className="metric-card" style={{ borderTop: '3px solid #ef4444' }}>
+          <span className="metric-label">Download</span>
+          <button className="btn btn-sm" onClick={handleDownload}>CSV</button>
+        </div>
+      </div>
+
+      {monthlyData.length > 0 && (
+        <div className="chart-card">
+          <h3>Monthly Attendance</h3>
+          <ResponsiveContainer width="100%" height={250}>
+            <BarChart data={monthlyData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" /><YAxis /><Tooltip />
+              <Bar dataKey="present" fill="#4f46e5" stackId="a" />
+              <Bar dataKey="absent" fill="#f1f5f9" stackId="a" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      <div className="card" style={{ marginTop: 20 }}>
+        <h3>Records</h3>
+        <div className="table-responsive">
+          <table className="data-table">
+            <thead><tr><th>Date</th><th>Status</th><th>Remarks</th></tr></thead>
+            <tbody>
+              {(data?.records || []).map((r) => (
+                <tr key={r.id}>
+                  <td>{r.date}</td>
+                  <td><span className="role-badge" style={{ background: r.status === 'present' ? '#d1fae5' : '#fee2e2', color: r.status === 'present' ? '#065f46' : '#991b1b' }}>{r.status}</span></td>
+                  <td>{r.remarks || '-'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </ParentLayout>
+  )
+}

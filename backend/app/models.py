@@ -43,6 +43,7 @@ class Student(SQLModel, table=True):
     status: str = Field(default="active")
     father_id: Optional[int] = Field(default=None, foreign_key="parent.id")
     mother_id: Optional[int] = Field(default=None, foreign_key="parent.id")
+    photo_path: Optional[str] = None
 
 
 class AcademicYear(SQLModel, table=True):
@@ -107,6 +108,26 @@ class Homework(SQLModel, table=True):
     attachment_path: Optional[str] = None
 
 
+class HomeworkSubmission(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    homework_id: int = Field(foreign_key="homework.id")
+    student_id: int = Field(foreign_key="student.id")
+    submitted_on: datetime = Field(default_factory=datetime.utcnow)
+    attachment_path: Optional[str] = None
+    remarks: Optional[str] = None
+    grade: Optional[str] = None
+    feedback: Optional[str] = None
+    status: str = Field(default="submitted")
+
+
+class TeacherAttendance(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    teacher_id: int = Field(foreign_key="teacher.id")
+    date: date
+    status: str = Field(default="present")
+    remarks: Optional[str] = None
+
+
 class Exam(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
@@ -154,6 +175,8 @@ class Notice(SQLModel, table=True):
     target_roles: Optional[str] = None  # comma-separated roles or "all"
     created_by: Optional[int] = Field(default=None, foreign_key="user.id")
     created_on: datetime = Field(default_factory=datetime.utcnow)
+    scheduled_for: Optional[datetime] = None
+    attachments_path: Optional[str] = None
 
 
 class Message(SQLModel, table=True):
@@ -192,4 +215,50 @@ class Document(SQLModel, table=True):
     name: str
     file_path: str
     uploaded_on: datetime = Field(default_factory=datetime.utcnow)
+
+
+class SchoolSettings(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    school_name: Optional[str] = None
+    address: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    logo_path: Optional[str] = None
+    academic_year_id: Optional[int] = Field(default=None, foreign_key="academicyear.id")
+
+
+class Timetable(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    class_id: int = Field(foreign_key="schoolclass.id")
+    section_id: Optional[int] = Field(default=None, foreign_key="section.id")
+    subject_id: int = Field(foreign_key="subject.id")
+    teacher_id: int = Field(foreign_key="teacher.id")
+    day_of_week: int  # 0=Monday, 6=Sunday
+    period: int  # 1-based period number
+    start_time: Optional[str] = None
+    end_time: Optional[str] = None
+    room: Optional[str] = None
+    academic_year_id: int = Field(foreign_key="academicyear.id")
+
+
+class Notification(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id")
+    title: str
+    message: str
+    notification_type: Optional[str] = None
+    reference_id: Optional[int] = None
+    is_read: bool = False
+    created_on: datetime = Field(default_factory=datetime.utcnow)
+
+
+class AuditLog(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: Optional[int] = Field(default=None, foreign_key="user.id")
+    action: str
+    resource: Optional[str] = None
+    resource_id: Optional[int] = None
+    details: Optional[str] = None
+    ip_address: Optional[str] = None
+    created_on: datetime = Field(default_factory=datetime.utcnow)
 

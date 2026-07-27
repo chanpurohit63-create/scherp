@@ -60,6 +60,28 @@ def reset_password(user_id: int, current_user: models.User = Depends(auth.requir
     return {"msg": "Password reset requested (placeholder)"}
 
 
+# ========== PROFILE & PASSWORD ==========
+@router.get("/profile", response_model=schemas.UserRead)
+def get_profile(current_user: models.User = Depends(auth.get_current_user)):
+    return schemas.UserRead(id=current_user.id, email=current_user.email, full_name=current_user.full_name, role=current_user.role, is_active=current_user.is_active)
+
+
+@router.put("/profile", response_model=schemas.UserRead)
+def update_profile(profile_update: schemas.UserUpdate, current_user: models.User = Depends(auth.get_current_user)):
+    values = profile_update.dict(exclude_unset=True)
+    user = crud.update_user(current_user.id, values)
+    return schemas.UserRead(id=user.id, email=user.email, full_name=user.full_name, role=user.role, is_active=user.is_active)
+
+
+@router.post("/profile/change-password")
+def change_password(old_password: str, new_password: str, current_user: models.User = Depends(auth.get_current_user)):
+    if not auth.verify_password(old_password, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    hashed = auth.get_password_hash(new_password)
+    crud.update_user(current_user.id, {"hashed_password": hashed})
+    return {"msg": "Password changed successfully"}
+
+
 @router.post("/roles", response_model=schemas.RoleRead, status_code=status.HTTP_201_CREATED)
 def create_role(role_in: schemas.RoleCreate, current_user: models.User = Depends(auth.require_roles("Super Admin"))):
     role = models.Role(name=role_in.name, description=role_in.description)
