@@ -12,8 +12,18 @@ from sqlalchemy import or_
 
 from .. import models, schemas, crud, auth
 from ..database import engine
+from ..tenant import get_current_school_id
 
 router = APIRouter()
+
+
+def _apply_tenant_filter(statement, model):
+    """Apply school_id filter to a select statement based on tenant context."""
+    sid = get_current_school_id()
+    if sid is not None and hasattr(model, "school_id"):
+        statement = statement.where(model.school_id == sid)
+    return statement
+
 
 ADMIN_ROLES = ("Super Admin", "School Admin", "Principal")
 ALL_ADMIN_ROLES = ("Super Admin", "School Admin", "Principal", "Teacher")
@@ -172,6 +182,7 @@ def list_teachers(
 ):
     with Session(engine) as session:
         statement = select(models.Teacher)
+        statement = _apply_tenant_filter(statement, models.Teacher)
         if query:
             statement = statement.where(
                 or_(
@@ -251,6 +262,7 @@ def list_students(
 ):
     with Session(engine) as session:
         statement = select(models.Student)
+        statement = _apply_tenant_filter(statement, models.Student)
         if query:
             pattern = f"%{query}%"
             statement = statement.where(
@@ -392,6 +404,7 @@ def list_homework_submissions(
 ):
     with Session(engine) as session:
         statement = select(models.HomeworkSubmission)
+        statement = _apply_tenant_filter(statement, models.HomeworkSubmission)
         if query:
             statement = statement.where(
                 or_(
@@ -445,6 +458,7 @@ def list_teacher_attendances(
 ):
     with Session(engine) as session:
         statement = select(models.TeacherAttendance)
+        statement = _apply_tenant_filter(statement, models.TeacherAttendance)
         if query:
             statement = statement.where(models.TeacherAttendance.remarks.contains(query))
         if status:
@@ -1110,56 +1124,82 @@ def delete_document(document_id: int, current_user=Depends(auth.require_roles(*A
 @router.get("/dashboard/summary", response_model=schemas.DashboardSummaryRead)
 def get_dashboard_summary(current_user=Depends(auth.require_roles(*ADMIN_ROLES, *ALL_ADMIN_ROLES))):
     with Session(engine) as session:
-        total_students = session.exec(select(func.count(models.Student.id))).one()
-        total_teachers = session.exec(select(func.count(models.Teacher.id))).one()
-
-        total_attendance = session.exec(select(func.count(models.Attendance.id))).one()
-        present_attendance = session.exec(select(func.count(models.Attendance.id)).where(models.Attendance.status == "present")).one()
+        sid = get_current_school_id()
+        
+        # Tenant-filtered queries
+        student_stmt = select(func.count(models.Student.id))
+        teacher_stmt = select(func.count(models.Teacher.id))
+        attendance_stmt = select(func.count(models.Attendance.id))
+        present_stmt = select(func.count(models.Attendance.id)).where(models.Attendance.status == "present")
+        payment_sum_stmt = select(func.coalesce(func.sum(models.Payment.amount), 0))
+        pending_fees_stmt = select(func.count(models.FeeAssignment.id)).where(models.FeeAssignment.is_paid == False)
+        exam_stmt = select(func.count(models.Exam.id)).where(models.Exam.start_date >= datetime.utcnow().date())
+        event_stmt = select(func.count(models.Event.id)).where(models.Event.start_date >= datetime.utcnow())
+        notices_stmt = select(models.Notice).order_by(models.Notice.created_on.desc()).limit(5)
+        
+        if sid is not None:
+            student_stmt = student_stmt.where(models.Student.school_id == sid)
+            teacher_stmt = teacher_stmt.where(models.Teacher.school_id == sid)
+            attendance_stmt = attendance_stmt.where(models.Attendance.school_id == sid)
+            present_stmt = present_stmt.where(models.Attendance.school_id == sid)
+            payment_sum_stmt = payment_sum_stmt.where(models.Payment.school_id == sid)
+            pending_fees_stmt = pending_fees_stmt.where(models.FeeAssignment.school_id == sid)
+            exam_stmt = exam_stmt.where(models.Exam.school_id == sid)
+            event_stmt = event_stmt.where(models.Event.school_id == sid)
+            notices_stmt = notices_stmt.where(models.Notice.school_id == sid)
+        
+        total_students = session.exec(student_stmt).one()
+        total_teachers = session.exec(teacher_stmt).one()
+        total_attendance = session.exec(attendance_stmt).one()
+        present_attendance = session.exec(present_stmt).one()
         attendance_pct = round((present_attendance / total_attendance * 100), 2) if total_attendance else 0.0
-
-        fee_collection = session.exec(select(func.coalesce(func.sum(models.Payment.amount), 0))).one()
-        pending_fees = session.exec(select(func.count(models.FeeAssignment.id)).where(models.FeeAssignment.is_paid == False)).one()
-
-        now = datetime.utcnow()
-        upcoming_exams = session.exec(select(func.count(models.Exam.id)).where(models.Exam.start_date >= now.date())).one()
-        upcoming_events = session.exec(select(func.count(models.Event.id)).where(models.Event.start_date >= now)).one()
-
-        notices_list = session.exec(select(models.Notice).order_by(models.Notice.created_on.desc()).limit(5)).all()
+        fee_collection = session.exec(payment_sum_stmt).one()
+        pending_fees = session.exec(pending_fees_stmt).one()
+        upcoming_exams = session.exec(exam_stmt).one()
+        upcoming_events = session.exec(event_stmt).one()
+        notices_list = session.exec(notices_stmt).all()
 
         monthly_attendance = []
         for m in range(1, 13):
             cnt = session.exec(
                 select(func.count(models.Attendance.id)).where(
                     func.extract('month', models.Attendance.date) == m,
-                    models.Attendance.status == "present"
+                    models.Attendance.status == "present",
+                    models.Attendance.school_id == sid if sid is not None else True
                 )
             ).one()
             monthly_attendance.append({"month": m, "count": cnt})
 
         monthly_fee = []
         for m in range(1, 13):
-            total = session.exec(
-                select(func.coalesce(func.sum(models.Payment.amount), 0)).where(
-                    func.extract('month', models.Payment.paid_on) == m
-                )
-            ).one()
+            fee_stmt = select(func.coalesce(func.sum(models.Payment.amount), 0)).where(
+                func.extract('month', models.Payment.paid_on) == m
+            )
+            if sid is not None:
+                fee_stmt = fee_stmt.where(models.Payment.school_id == sid)
+            total = session.exec(fee_stmt).one()
             monthly_fee.append({"month": m, "total": float(total)})
 
         student_growth = []
         for m in range(1, 13):
-            cnt = session.exec(
-                select(func.count(models.Student.id)).where(
-                    func.extract('month', models.Student.admission_date) == m
-                )
-            ).one()
+            growth_stmt = select(func.count(models.Student.id)).where(
+                func.extract('month', models.Student.admission_date) == m
+            )
+            if sid is not None:
+                growth_stmt = growth_stmt.where(models.Student.school_id == sid)
+            cnt = session.exec(growth_stmt).one()
             student_growth.append({"month": m, "count": cnt})
 
         exam_performance = []
-        exams = session.exec(select(models.Exam).limit(5)).all()
+        exam_list_stmt = select(models.Exam).limit(5)
+        if sid is not None:
+            exam_list_stmt = exam_list_stmt.where(models.Exam.school_id == sid)
+        exams = session.exec(exam_list_stmt).all()
         for exam in exams:
-            avg_marks = session.exec(
-                select(func.avg(models.ExamResult.marks_obtained)).where(models.ExamResult.exam_id == exam.id)
-            ).one()
+            avg_stmt = select(func.avg(models.ExamResult.marks_obtained)).where(models.ExamResult.exam_id == exam.id)
+            if sid is not None:
+                avg_stmt = avg_stmt.where(models.ExamResult.school_id == sid)
+            avg_marks = session.exec(avg_stmt).one()
             exam_performance.append({"exam_name": exam.name, "average_marks": round(float(avg_marks or 0), 2)})
 
         return schemas.DashboardSummaryRead(
@@ -1186,7 +1226,10 @@ def report_students(
     current_user=Depends(auth.require_roles(*ADMIN_ROLES)),
 ):
     with Session(engine) as session:
+        sid = get_current_school_id()
         statement = select(models.Student, models.User).join(models.User, models.Student.user_id == models.User.id)
+        if sid is not None:
+            statement = statement.where(models.Student.school_id == sid)
         if query:
             statement = statement.where(models.User.full_name.contains(query))
         if status:
@@ -1213,7 +1256,10 @@ def report_attendance(
     export: Optional[str] = None, current_user=Depends(auth.require_roles(*ADMIN_ROLES)),
 ):
     with Session(engine) as session:
+        sid = get_current_school_id()
         statement = select(models.Attendance, models.Student).join(models.Student, models.Attendance.student_id == models.Student.id)
+        if sid is not None:
+            statement = statement.where(models.Attendance.school_id == sid)
         if from_date:
             statement = statement.where(models.Attendance.date >= from_date)
         if to_date:
@@ -1241,7 +1287,10 @@ def report_teachers(
     export: Optional[str] = None, current_user=Depends(auth.require_roles(*ADMIN_ROLES)),
 ):
     with Session(engine) as session:
+        sid = get_current_school_id()
         statement = select(models.Teacher, models.User).join(models.User, models.Teacher.user_id == models.User.id)
+        if sid is not None:
+            statement = statement.where(models.Teacher.school_id == sid)
         if query:
             statement = statement.where(models.User.full_name.contains(query))
         rows = session.exec(statement.offset(skip).limit(limit)).all()
@@ -1265,7 +1314,10 @@ def report_fees(
     export: Optional[str] = None, current_user=Depends(auth.require_roles(*ADMIN_ROLES)),
 ):
     with Session(engine) as session:
+        sid = get_current_school_id()
         statement = select(models.FeeAssignment).join(models.FeeStructure, models.FeeAssignment.fee_structure_id == models.FeeStructure.id)
+        if sid is not None:
+            statement = statement.where(models.FeeAssignment.school_id == sid)
         if is_paid is not None:
             statement = statement.where(models.FeeAssignment.is_paid == is_paid)
         rows = session.exec(statement.offset(skip).limit(limit)).all()
@@ -1288,7 +1340,10 @@ def report_exams(
     export: Optional[str] = None, current_user=Depends(auth.require_roles(*ADMIN_ROLES)),
 ):
     with Session(engine) as session:
+        sid = get_current_school_id()
         statement = select(models.ExamResult, models.Student).join(models.Student, models.ExamResult.student_id == models.Student.id)
+        if sid is not None:
+            statement = statement.where(models.ExamResult.school_id == sid)
         if exam_id:
             statement = statement.where(models.ExamResult.exam_id == exam_id)
         rows = session.exec(statement.offset(skip).limit(limit)).all()
@@ -1369,33 +1424,53 @@ def preview_certificate(certificate_id: int, current_user=Depends(auth.require_r
 # ========== SCHOOL SETTINGS ==========
 @router.get("/settings", response_model=schemas.SchoolSettingsRead)
 def get_settings(current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
-    settings = crud.get_item(models.SchoolSettings, 1)
-    if not settings:
-        settings = crud.create_item(models.SchoolSettings(school_name="My School"))
+    with Session(engine) as session:
+        sid = get_current_school_id()
+        if sid is not None:
+            statement = select(models.SchoolSettings).where(models.SchoolSettings.school_id == sid)
+            settings = session.exec(statement).first()
+        else:
+            settings = None
+        if not settings:
+            settings = crud.create_item(models.SchoolSettings(school_name="My School"))
     return settings
 
 
 @router.put("/settings", response_model=schemas.SchoolSettingsRead)
 def update_settings(settings_update: schemas.SchoolSettingsUpdate, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
-    settings = crud.get_item(models.SchoolSettings, 1)
-    if not settings:
-        settings = crud.create_item(models.SchoolSettings(school_name="My School"))
-    updated = update_resource(models.SchoolSettings, settings.id, settings_update.dict(exclude_unset=True))
+    with Session(engine) as session:
+        sid = get_current_school_id()
+        if sid is not None:
+            statement = select(models.SchoolSettings).where(models.SchoolSettings.school_id == sid)
+            settings = session.exec(statement).first()
+        else:
+            settings = None
+        if not settings:
+            settings = crud.create_item(models.SchoolSettings(school_name="My School"))
+        updated = update_resource(models.SchoolSettings, settings.id, settings_update.dict(exclude_unset=True))
     return updated
 
 
 @router.post("/settings/logo", status_code=status.HTTP_200_OK)
 async def upload_logo(file: UploadFile = File(...), current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
+    sid = get_current_school_id()
     upload_dir = Path("static/uploads")
+    if sid is not None:
+        upload_dir = upload_dir / f"school_{sid}"
     upload_dir.mkdir(parents=True, exist_ok=True)
     file_path = upload_dir / f"logo_{file.filename}"
     contents = await file.read()
     file_path.write_bytes(contents)
-    settings = crud.get_item(models.SchoolSettings, 1)
-    if not settings:
-        settings = crud.create_item(models.SchoolSettings(school_name="My School", logo_path=str(file_path)))
-    else:
-        update_resource(models.SchoolSettings, settings.id, {"logo_path": str(file_path)})
+    with Session(engine) as session:
+        if sid is not None:
+            statement = select(models.SchoolSettings).where(models.SchoolSettings.school_id == sid)
+            settings = session.exec(statement).first()
+        else:
+            settings = None
+        if not settings:
+            settings = crud.create_item(models.SchoolSettings(school_name="My School", logo_path=str(file_path)))
+        else:
+            update_resource(models.SchoolSettings, settings.id, {"logo_path": str(file_path)})
     return {"logo_path": str(file_path)}
 
 
@@ -2686,6 +2761,7 @@ def create_timetable_entry(entry_in: schemas.TimetableCreate, current_user=Depen
 def list_timetable(class_id: Optional[int] = None, section_id: Optional[int] = None, teacher_id: Optional[int] = None, day_of_week: Optional[int] = None, current_user=Depends(auth.require_roles(*ADMIN_ROLES, *ALL_ADMIN_ROLES))):
     with Session(engine) as session:
         statement = select(models.Timetable)
+        statement = _apply_tenant_filter(statement, models.Timetable)
         if class_id: statement = statement.where(models.Timetable.class_id == class_id)
         if section_id: statement = statement.where(models.Timetable.section_id == section_id)
         if teacher_id: statement = statement.where(models.Timetable.teacher_id == teacher_id)
@@ -2722,29 +2798,6 @@ def check_timetable_conflicts(class_id: Optional[int] = None, teacher_id: Option
         return {"conflicts": conflicts, "total_entries": len(entries)}
 
 
-# ========== NOTIFICATIONS ==========
-@router.get("/notifications", response_model=List[schemas.NotificationRead])
-def list_notifications(current_user=Depends(auth.get_current_user)):
-    with Session(engine) as session:
-        return session.exec(select(models.Notification).where(models.Notification.user_id == current_user.id).order_by(models.Notification.created_on.desc()).limit(50)).all()
-
-
-@router.put("/notifications/{notification_id}/read", response_model=schemas.NotificationRead)
-def mark_notification_read(notification_id: int, current_user=Depends(auth.get_current_user)):
-    n = update_resource(models.Notification, notification_id, {"is_read": True})
-    if not n: raise HTTPException(404)
-    return n
-
-
-@router.put("/notifications/read-all")
-def mark_all_notifications_read(current_user=Depends(auth.get_current_user)):
-    with Session(engine) as session:
-        session.exec(select(models.Notification).where(models.Notification.user_id == current_user.id, models.Notification.is_read == False))
-        session.query(models.Notification).filter(models.Notification.user_id == current_user.id, models.Notification.is_read == False).update({"is_read": True})
-        session.commit()
-    return {"msg": "All notifications marked as read"}
-
-
 # ========== AUDIT LOG ==========
 @router.get("/audit-logs", response_model=List[schemas.AuditLogRead])
 def list_audit_logs(skip: int = 0, limit: int = 100, current_user=Depends(auth.require_roles("Super Admin"))):
@@ -2755,13 +2808,32 @@ def list_audit_logs(skip: int = 0, limit: int = 100, current_user=Depends(auth.r
 @router.get("/analytics/overview")
 def analytics_overview(current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
     with Session(engine) as session:
-        total_students = session.exec(select(func.count(models.Student.id))).one() or 0
-        total_teachers = session.exec(select(func.count(models.Teacher.id))).one() or 0
-        male = session.exec(select(func.count(models.Student.id)).where(models.Student.gender == "Male")).one() or 0
-        female = session.exec(select(func.count(models.Student.id)).where(models.Student.gender == "Female")).one() or 0
-        fee_collection = session.exec(select(func.coalesce(func.sum(models.Payment.amount), 0))).one() or 0
-        pass_count = session.exec(select(func.count(models.ExamResult.id)).where(models.ExamResult.marks_obtained >= models.ExamResult.max_marks * 0.4)).one() or 0
-        total_results = session.exec(select(func.count(models.ExamResult.id))).one() or 0
+        sid = get_current_school_id()
+        
+        student_stmt = select(func.count(models.Student.id))
+        teacher_stmt = select(func.count(models.Teacher.id))
+        male_stmt = select(func.count(models.Student.id)).where(models.Student.gender == "Male")
+        female_stmt = select(func.count(models.Student.id)).where(models.Student.gender == "Female")
+        fee_stmt = select(func.coalesce(func.sum(models.Payment.amount), 0))
+        pass_stmt = select(func.count(models.ExamResult.id)).where(models.ExamResult.marks_obtained >= models.ExamResult.max_marks * 0.4)
+        total_results_stmt = select(func.count(models.ExamResult.id))
+        
+        if sid is not None:
+            student_stmt = student_stmt.where(models.Student.school_id == sid)
+            teacher_stmt = teacher_stmt.where(models.Teacher.school_id == sid)
+            male_stmt = male_stmt.where(models.Student.school_id == sid)
+            female_stmt = female_stmt.where(models.Student.school_id == sid)
+            fee_stmt = fee_stmt.where(models.Payment.school_id == sid)
+            pass_stmt = pass_stmt.where(models.ExamResult.school_id == sid)
+            total_results_stmt = total_results_stmt.where(models.ExamResult.school_id == sid)
+        
+        total_students = session.exec(student_stmt).one() or 0
+        total_teachers = session.exec(teacher_stmt).one() or 0
+        male = session.exec(male_stmt).one() or 0
+        female = session.exec(female_stmt).one() or 0
+        fee_collection = session.exec(fee_stmt).one() or 0
+        pass_count = session.exec(pass_stmt).one() or 0
+        total_results = session.exec(total_results_stmt).one() or 0
         pass_pct = round((pass_count / total_results * 100), 1) if total_results else 0
         return {
             "total_students": total_students,

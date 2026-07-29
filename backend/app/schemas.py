@@ -16,6 +16,7 @@ class UserRead(BaseModel):
     full_name: Optional[str]
     role: str
     is_active: bool
+    school_id: Optional[int] = None
 
     class Config:
         orm_mode = True
@@ -31,6 +32,7 @@ class UserUpdate(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
+    school_id: Optional[int] = None
 
 
 class RoleCreate(BaseModel):
@@ -47,6 +49,100 @@ class RoleRead(BaseModel):
         orm_mode = True
 
 
+# ========== SCHOOL (Multi-Tenant) ==========
+
+class SchoolCreate(BaseModel):
+    school_name: str
+    school_code: str
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    country: Optional[str] = None
+    postal_code: Optional[str] = None
+    website: Optional[str] = None
+    principal_name: Optional[str] = None
+    subscription_plan: Optional[str] = "free"
+    timezone: Optional[str] = "UTC"
+    currency: Optional[str] = "USD"
+    student_limit: Optional[int] = 0
+    teacher_limit: Optional[int] = 0
+
+
+class SchoolUpdate(BaseModel):
+    school_name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    country: Optional[str] = None
+    postal_code: Optional[str] = None
+    website: Optional[str] = None
+    principal_name: Optional[str] = None
+    subscription_plan: Optional[str] = None
+    subscription_start: Optional[date] = None
+    subscription_end: Optional[date] = None
+    status: Optional[str] = None
+    timezone: Optional[str] = None
+    currency: Optional[str] = None
+    student_limit: Optional[int] = None
+    teacher_limit: Optional[int] = None
+    logo: Optional[str] = None
+
+
+class SchoolRead(BaseModel):
+    id: int
+    school_name: str
+    school_code: str
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    country: Optional[str] = None
+    postal_code: Optional[str] = None
+    logo: Optional[str] = None
+    website: Optional[str] = None
+    principal_name: Optional[str] = None
+    subscription_plan: Optional[str] = None
+    subscription_start: Optional[date] = None
+    subscription_end: Optional[date] = None
+    status: str = "active"
+    timezone: Optional[str] = "UTC"
+    currency: Optional[str] = "USD"
+    student_limit: Optional[int] = 0
+    teacher_limit: Optional[int] = 0
+    created_on: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        orm_mode = True
+
+
+class SchoolDashboardRead(BaseModel):
+    total_students: int = 0
+    total_teachers: int = 0
+    total_parents: int = 0
+    total_classes: int = 0
+    total_subjects: int = 0
+    active_enrollments: int = 0
+    fee_collection: float = 0
+    pending_fees: int = 0
+
+
+class PlatformAnalyticsRead(BaseModel):
+    total_schools: int = 0
+    active_schools: int = 0
+    suspended_schools: int = 0
+    expired_schools: int = 0
+    total_students: int = 0
+    total_teachers: int = 0
+    total_revenue: float = 0
+    schools: List[SchoolRead] = []
+
+
 class ParentCreate(BaseModel):
     user_id: int
     phone: Optional[str] = None
@@ -56,8 +152,8 @@ class ParentCreate(BaseModel):
 class ParentRead(BaseModel):
     id: int
     user_id: int
-    phone: Optional[str]
-    address: Optional[str]
+    phone: Optional[str] = None
+    address: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -65,7 +161,7 @@ class ParentRead(BaseModel):
 
 class ParentProfileRead(ParentRead):
     email: EmailStr
-    full_name: Optional[str]
+    full_name: Optional[str] = None
     role: str
 
 
@@ -84,9 +180,9 @@ class TeacherCreate(BaseModel):
 class TeacherRead(BaseModel):
     id: int
     user_id: int
-    employee_no: Optional[str]
-    hire_date: Optional[date]
-    is_active: bool
+    employee_no: Optional[str] = None
+    hire_date: Optional[date] = None
+    is_active: bool = True
 
     class Config:
         orm_mode = True
@@ -94,7 +190,7 @@ class TeacherRead(BaseModel):
 
 class TeacherProfileRead(TeacherRead):
     email: EmailStr
-    full_name: Optional[str]
+    full_name: Optional[str] = None
     role: str
 
 
@@ -118,14 +214,14 @@ class StudentCreate(BaseModel):
 class StudentRead(BaseModel):
     id: int
     user_id: int
-    admission_no: Optional[str]
-    dob: Optional[date]
-    gender: Optional[str]
-    admission_date: Optional[date]
-    status: str
-    father_id: Optional[int]
-    mother_id: Optional[int]
-    photo_path: Optional[str]
+    admission_no: Optional[str] = None
+    dob: Optional[date] = None
+    gender: Optional[str] = None
+    admission_date: Optional[date] = None
+    status: str = "active"
+    father_id: Optional[int] = None
+    mother_id: Optional[int] = None
+    photo_path: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -133,7 +229,7 @@ class StudentRead(BaseModel):
 
 class StudentProfileRead(StudentRead):
     email: EmailStr
-    full_name: Optional[str]
+    full_name: Optional[str] = None
     role: str
 
 
@@ -160,7 +256,7 @@ class AcademicYearRead(BaseModel):
     name: str
     start_date: date
     end_date: date
-    is_active: bool
+    is_active: bool = False
 
     class Config:
         orm_mode = True
@@ -181,7 +277,7 @@ class SchoolClassCreate(BaseModel):
 class SchoolClassRead(BaseModel):
     id: int
     name: str
-    grade_level: Optional[str]
+    grade_level: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -219,7 +315,7 @@ class SubjectCreate(BaseModel):
 class SubjectRead(BaseModel):
     id: int
     name: str
-    code: Optional[str]
+    code: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -242,7 +338,7 @@ class SubjectAllocationRead(BaseModel):
     subject_id: int
     teacher_id: int
     class_id: int
-    section_id: Optional[int]
+    section_id: Optional[int] = None
 
     class Config:
         orm_mode = True
@@ -267,8 +363,8 @@ class EnrollmentRead(BaseModel):
     student_id: int
     academic_year_id: int
     class_id: int
-    section_id: Optional[int]
-    enrolled_on: datetime
+    section_id: Optional[int] = None
+    enrolled_on: Optional[datetime] = None
 
     class Config:
         orm_mode = True
@@ -292,15 +388,15 @@ class AttendanceRead(BaseModel):
     id: int
     student_id: int
     date: date
-    status: str
-    remarks: Optional[str]
+    status: str = "present"
+    remarks: Optional[str] = None
 
     class Config:
         orm_mode = True
 
 
 class AttendanceUpdate(BaseModel):
-    date: Optional[date] = None
+    date: Optional[date] = None # type: ignore
     status: Optional[str] = None
     remarks: Optional[str] = None
 
@@ -318,12 +414,12 @@ class HomeworkCreate(BaseModel):
 class HomeworkRead(BaseModel):
     id: int
     title: str
-    description: Optional[str]
+    description: Optional[str] = None
     assigned_by: int
     class_id: int
-    section_id: Optional[int]
-    due_date: Optional[date]
-    attachment_path: Optional[str]
+    section_id: Optional[int] = None
+    due_date: Optional[date] = None
+    attachment_path: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -350,12 +446,12 @@ class HomeworkSubmissionRead(BaseModel):
     id: int
     homework_id: int
     student_id: int
-    submitted_on: datetime
-    attachment_path: Optional[str]
-    remarks: Optional[str]
-    grade: Optional[str]
-    feedback: Optional[str]
-    status: str
+    submitted_on: Optional[datetime] = None
+    attachment_path: Optional[str] = None
+    remarks: Optional[str] = None
+    grade: Optional[str] = None
+    feedback: Optional[str] = None
+    status: str = "submitted"
 
     class Config:
         orm_mode = True
@@ -380,15 +476,15 @@ class TeacherAttendanceRead(BaseModel):
     id: int
     teacher_id: int
     date: date
-    status: str
-    remarks: Optional[str]
+    status: str = "present"
+    remarks: Optional[str] = None
 
     class Config:
         orm_mode = True
 
 
 class TeacherAttendanceUpdate(BaseModel):
-    date: Optional[date] = None
+    date: Optional[date] = None # pyright: ignore[reportInvalidTypeForm]
     status: Optional[str] = None
     remarks: Optional[str] = None
 
@@ -404,8 +500,8 @@ class ExamRead(BaseModel):
     id: int
     name: str
     academic_year_id: int
-    start_date: Optional[date]
-    end_date: Optional[date]
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
 
     class Config:
         orm_mode = True
@@ -431,8 +527,8 @@ class ExamResultRead(BaseModel):
     exam_id: int
     student_id: int
     subject_id: int
-    marks_obtained: Optional[float]
-    max_marks: Optional[float]
+    marks_obtained: Optional[float] = None
+    max_marks: Optional[float] = None
 
     class Config:
         orm_mode = True
@@ -456,7 +552,7 @@ class FeeStructureRead(BaseModel):
     id: int
     name: str
     amount: float
-    category: Optional[str]
+    category: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -479,8 +575,8 @@ class FeeAssignmentRead(BaseModel):
     id: int
     student_id: int
     fee_structure_id: int
-    due_date: Optional[date]
-    is_paid: bool
+    due_date: Optional[date] = None
+    is_paid: bool = False
 
     class Config:
         orm_mode = True
@@ -503,8 +599,8 @@ class PaymentRead(BaseModel):
     id: int
     fee_assignment_id: int
     amount: float
-    paid_on: datetime
-    reference: Optional[str]
+    paid_on: Optional[datetime] = None
+    reference: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -527,12 +623,12 @@ class NoticeCreate(BaseModel):
 class NoticeRead(BaseModel):
     id: int
     title: str
-    content: Optional[str]
-    target_roles: Optional[str]
-    created_by: Optional[int]
-    created_on: datetime
-    scheduled_for: Optional[datetime]
-    attachments_path: Optional[str]
+    content: Optional[str] = None
+    target_roles: Optional[str] = None
+    created_by: Optional[int] = None
+    created_on: Optional[datetime] = None
+    scheduled_for: Optional[datetime] = None
+    attachments_path: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -556,11 +652,11 @@ class MessageCreate(BaseModel):
 class MessageRead(BaseModel):
     id: int
     subject: str
-    body: Optional[str]
+    body: Optional[str] = None
     sender_id: int
     recipient_id: int
-    sent_on: datetime
-    is_read: bool
+    sent_on: Optional[datetime] = None
+    is_read: bool = False
 
     class Config:
         orm_mode = True
@@ -584,11 +680,11 @@ class EventCreate(BaseModel):
 class EventRead(BaseModel):
     id: int
     title: str
-    description: Optional[str]
+    description: Optional[str] = None
     start_date: datetime
     end_date: datetime
-    event_type: Optional[str]
-    target_roles: Optional[str]
+    event_type: Optional[str] = None
+    target_roles: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -615,9 +711,9 @@ class CertificateRead(BaseModel):
     id: int
     student_id: int
     certificate_type: str
-    issue_date: datetime
-    remarks: Optional[str]
-    file_path: Optional[str]
+    issue_date: Optional[datetime] = None
+    remarks: Optional[str] = None
+    file_path: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -632,12 +728,12 @@ class CertificateUpdate(BaseModel):
 
 class SchoolSettingsRead(BaseModel):
     id: int
-    school_name: Optional[str]
-    address: Optional[str]
-    phone: Optional[str]
-    email: Optional[str]
-    logo_path: Optional[str]
-    academic_year_id: Optional[int]
+    school_name: Optional[str] = None
+    address: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    logo_path: Optional[str] = None
+    academic_year_id: Optional[int] = None
 
     class Config:
         orm_mode = True
@@ -653,18 +749,18 @@ class SchoolSettingsUpdate(BaseModel):
 
 
 class DashboardSummaryRead(BaseModel):
-    total_students: int
-    total_teachers: int
-    attendance_percentage: float
-    fee_collection: float
-    pending_fees: int
-    upcoming_exams: int
-    upcoming_events: int
-    notices: List[NoticeRead]
-    monthly_attendance: List[dict]
-    monthly_fee_collection: List[dict]
-    student_growth: List[dict]
-    exam_performance: List[dict]
+    total_students: int = 0
+    total_teachers: int = 0
+    attendance_percentage: float = 0
+    fee_collection: float = 0
+    pending_fees: int = 0
+    upcoming_exams: int = 0
+    upcoming_events: int = 0
+    notices: List[NoticeRead] = []
+    monthly_attendance: List[dict] = []
+    monthly_fee_collection: List[dict] = []
+    student_growth: List[dict] = []
+    exam_performance: List[dict] = []
 
 
 class DocumentCreate(BaseModel):
@@ -680,7 +776,7 @@ class DocumentRead(BaseModel):
     owner_id: int
     name: str
     file_path: str
-    uploaded_on: datetime
+    uploaded_on: Optional[datetime] = None
 
     class Config:
         orm_mode = True
@@ -709,14 +805,14 @@ class TimetableCreate(BaseModel):
 class TimetableRead(BaseModel):
     id: int
     class_id: int
-    section_id: Optional[int]
+    section_id: Optional[int] = None
     subject_id: int
     teacher_id: int
     day_of_week: int
     period: int
-    start_time: Optional[str]
-    end_time: Optional[str]
-    room: Optional[str]
+    start_time: Optional[str] = None
+    end_time: Optional[str] = None
+    room: Optional[str] = None
     academic_year_id: int
 
     class Config:
@@ -736,34 +832,189 @@ class TimetableUpdate(BaseModel):
     academic_year_id: Optional[int] = None
 
 
-class NotificationRead(BaseModel):
-    id: int
+class NotificationCreate(BaseModel):
     user_id: int
     title: str
     message: str
-    notification_type: Optional[str]
-    reference_id: Optional[int]
-    is_read: bool
-    created_on: datetime
+    role: Optional[str] = None
+    category: Optional[str] = None
+    priority: Optional[str] = "normal"
+    related_module: Optional[str] = None
+    related_record_id: Optional[int] = None
+    sender_id: Optional[int] = None
+    school_id: Optional[int] = None
+    notification_type: Optional[str] = "individual"
+    action_url: Optional[str] = None
+    icon: Optional[str] = None
+    color: Optional[str] = None
+    expires_at: Optional[datetime] = None
+    scheduled_for: Optional[datetime] = None
 
-    class Config:
-        orm_mode = True
 
-
-class AuditLogRead(BaseModel):
+class NotificationRead(BaseModel):
     id: int
-    user_id: Optional[int]
-    action: str
-    resource: Optional[str]
-    resource_id: Optional[int]
-    details: Optional[str]
-    ip_address: Optional[str]
-    created_on: datetime
+    school_id: Optional[int] = None
+    user_id: int
+    role: Optional[str] = None
+    notification_type: Optional[str] = None
+    category: Optional[str] = None
+    title: str
+    message: str
+    priority: Optional[str] = None
+    related_module: Optional[str] = None
+    related_record_id: Optional[int] = None
+    action_url: Optional[str] = None
+    icon: Optional[str] = None
+    color: Optional[str] = None
+    sender_id: Optional[int] = None
+    is_read: bool = False
+    is_archived: bool = False
+    is_deleted: bool = False
+    is_pinned: bool = False
+    delivered_at: Optional[datetime] = None
+    read_at: Optional[datetime] = None
+    expires_at: Optional[datetime] = None
+    scheduled_for: Optional[datetime] = None
+    created_on: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     class Config:
         orm_mode = True
 
+
+class BroadcastCreate(BaseModel):
+    title: str
+    message: str
+    category: Optional[str] = None
+    priority: Optional[str] = "normal"
+    target_roles: Optional[str] = None
+    target_class_id: Optional[int] = None
+    target_section_id: Optional[int] = None
+    target_user_ids: Optional[List[int]] = None
+    action_url: Optional[str] = None
+    icon: Optional[str] = None
+    color: Optional[str] = None
+    expires_at: Optional[datetime] = None
+    scheduled_for: Optional[datetime] = None
+
+
+class NotificationPreferenceCreate(BaseModel):
+    email_enabled: Optional[bool] = True
+    in_app_enabled: Optional[bool] = True
+    sound_enabled: Optional[bool] = True
+    browser_enabled: Optional[bool] = True
+    quiet_hours_start: Optional[str] = None
+    quiet_hours_end: Optional[str] = None
+
+
+class NotificationPreferenceRead(BaseModel):
+    id: int
+    user_id: int
+    email_enabled: bool = True
+    in_app_enabled: bool = True
+    sound_enabled: bool = True
+    browser_enabled: bool = True
+    quiet_hours_start: Optional[str] = None
+    quiet_hours_end: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+
+
+class NotificationPreferenceUpdate(BaseModel):
+    email_enabled: Optional[bool] = None
+    in_app_enabled: Optional[bool] = None
+    sound_enabled: Optional[bool] = None
+    browser_enabled: Optional[bool] = None
+    quiet_hours_start: Optional[str] = None
+    quiet_hours_end: Optional[str] = None
+
+
+# ========== PASSWORD CHANGE ==========
 
 class PasswordChange(BaseModel):
     current_password: str
     new_password: str
+
+
+# ========== AUDIT LOG ==========
+
+class AuditLogRead(BaseModel):
+    id: int
+    user_id: Optional[int] = None
+    school_id: Optional[int] = None
+    action: str
+    resource: Optional[str] = None
+    resource_id: Optional[int] = None
+    details: Optional[str] = None
+    before_values: Optional[str] = None
+    after_values: Optional[str] = None
+    ip_address: Optional[str] = None
+    created_on: Optional[datetime] = None
+
+    class Config:
+        orm_mode = True
+
+
+class AuditLogCreate(BaseModel):
+    action: str
+    resource: Optional[str] = None
+    resource_id: Optional[int] = None
+    details: Optional[str] = None
+    before_values: Optional[str] = None
+    after_values: Optional[str] = None
+
+
+# ========== SUBSCRIPTION PLANS ==========
+
+class SubscriptionPlan(BaseModel):
+    name: str
+    max_students: int
+    max_teachers: int
+    storage_mb: int
+    modules: List[str] = []
+    price_monthly: float = 0
+    price_yearly: float = 0
+
+
+SUBSCRIPTION_PLANS = {
+    "free": SubscriptionPlan(name="Free", max_students=50, max_teachers=5, storage_mb=100, modules=["students", "attendance", "homework"], price_monthly=0, price_yearly=0),
+    "basic": SubscriptionPlan(name="Basic", max_students=200, max_teachers=20, storage_mb=500, modules=["students", "attendance", "homework", "fees", "exams"], price_monthly=29, price_yearly=290),
+    "standard": SubscriptionPlan(name="Standard", max_students=500, max_teachers=50, storage_mb=2000, modules=["students", "attendance", "homework", "fees", "exams", "transport", "library"], price_monthly=79, price_yearly=790),
+    "premium": SubscriptionPlan(name="Premium", max_students=2000, max_teachers=200, storage_mb=10000, modules=["students", "attendance", "homework", "fees", "exams", "transport", "library", "hostel", "hr"], price_monthly=199, price_yearly=1990),
+    "enterprise": SubscriptionPlan(name="Enterprise", max_students=10000, max_teachers=1000, storage_mb=50000, modules=["*"], price_monthly=499, price_yearly=4990),
+}
+
+
+# ========== PLATFORM DASHBOARD ==========
+
+class PlatformDashboardRead(BaseModel):
+    total_schools: int = 0
+    active_schools: int = 0
+    inactive_schools: int = 0
+    suspended_schools: int = 0
+    expired_schools: int = 0
+    total_students: int = 0
+    total_teachers: int = 0
+    total_parents: int = 0
+    total_staff: int = 0
+    total_revenue: float = 0
+    monthly_revenue: float = 0
+    new_schools_this_month: int = 0
+    active_users_today: int = 0
+    subscription_distribution: List[dict] = []
+    school_growth: List[dict] = []
+    revenue_trend: List[dict] = []
+    monthly_registrations: List[dict] = []
+
+
+class SchoolStatisticsRead(BaseModel):
+    school_id: int
+    school_name: str
+    total_students: int = 0
+    total_teachers: int = 0
+    total_parents: int = 0
+    total_classes: int = 0
+    total_revenue: float = 0
+    subscription_plan: Optional[str] = None
+    status: str = "active"

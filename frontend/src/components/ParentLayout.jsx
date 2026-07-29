@@ -1,6 +1,8 @@
 import React from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.jsx'
+import NotificationBell from './NotificationBell'
+import { useNotifications } from './NotificationProvider'
 
 const NAV_ITEMS = [
   { to: '/parent/dashboard', label: 'Dashboard', icon: '📊' },
@@ -14,6 +16,7 @@ const NAV_ITEMS = [
 export default function ParentLayout({ title, children }) {
   const auth = useAuth()
   const navigate = useNavigate()
+  const { unreadCount } = useNotifications()
 
   const handleLogout = () => {
     auth.logout()
@@ -38,7 +41,10 @@ export default function ParentLayout({ title, children }) {
         </div>
       </aside>
       <main className="main-content">
-        <h1 style={{ marginBottom: 24, fontSize: '1.5rem' }}>{title}</h1>
+        <div className="main-content-header">
+          <h1 style={{ margin: 0, fontSize: '1.5rem' }}>{title}</h1>
+          <NotificationBell unreadCount={unreadCount} />
+        </div>
         {children}
       </main>
     </div>
