@@ -21,8 +21,8 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 # School statuses that are allowed to access protected modules
-ACTIVE_SCHOOL_STATUSES = {"active", "expired"}  # expired can login but editing restricted
-BLOCKED_SCHOOL_STATUSES = {"suspended", "inactive", "deleted"}
+ACTIVE_SCHOOL_STATUSES = {"active"}  # Only active schools can login
+BLOCKED_SCHOOL_STATUSES = {"suspended", "inactive", "deleted", "expired"}
 
 
 def get_password_hash(password: str) -> str:

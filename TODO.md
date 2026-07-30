@@ -1,40 +1,22 @@
-# Multi-Tenant Hardening - TODO
+# Phase 3: Enterprise Timetable Management System
 
-## Phase 1: Core CRUD & Auth Hardening
-- [ ] 1. Add tenant check to `crud.py` - get_user(), update_user(), delete_user()
-- [ ] 2. Add tenant override protection in `auth.py`
+## Steps
 
-## Phase 2: Fix Dashboard & Analytics
-- [ ] 3. Fix `/dashboard/summary` - add tenant filters to ALL queries
-- [ ] 4. Fix `/analytics/overview` - add tenant filters
+### Step 1: Database Models
+- [ ] Add `Room` model to `backend/app/models.py`
+- [ ] Upgrade `Timetable` model with new fields (room_id, status, remarks, created_by, updated_by, created_at, updated_at)
 
-## Phase 3: Fix ALL Report Endpoints
-- [ ] 5. Fix `/reports/students` - add school_id filter
-- [ ] 6. Fix `/reports/attendance` - add school_id filter
-- [ ] 7. Fix `/reports/teachers` - add school_id filter
-- [ ] 8. Fix `/reports/fees` - add school_id filter
-- [ ] 9. Fix `/reports/exams` - add school_id filter
+### Step 2: Pydantic Schemas
+- [ ] Add Room schemas (Create, Read, Update) to `backend/app/schemas.py`
+- [ ] Upgrade Timetable schemas with new fields
 
-## Phase 4: Fix Portal Endpoints
-- [ ] 10. Fix Student Portal (dashboard, exams, calendar, notices, messages)
-- [ ] 11. Fix Parent Portal (child endpoints, calendar, notices, messages)
-- [ ] 12. Fix Teacher Portal (dashboard, classes, attendance, exams, students, calendar, messages)
-
-## Phase 5: Fix Notification Service
-- [ ] 13. Fix notify_notice_created - filter by school_id
-- [ ] 14. Fix notify_event_created - filter by school_id
-- [ ] 15. Fix notify_fee_payment_received - filter by school_id for admins
-
-## Phase 6: File Storage Isolation
-- [ ] 16. Update all upload handlers to use school_id subdirectories
-
-## Phase 7: School Settings & Timetable Fixes
-- [ ] 17. Fix School Settings - remove hardcoded `id=1`
-- [ ] 18. Fix Timetable list - add tenant filter
-
-## Phase 8: Cross-Tenant Security Tests
-- [ ] 19. Create comprehensive pytest suite
-
-## Phase 9: School Status Enforcement
-- [ ] 20. Add subscription expiry auto-check on every request
+### Step 3: API Endpoints
+- [ ] Add Room CRUD endpoints (POST/GET/PUT/DELETE) to `backend/app/routers/erp.py`
+- [ ] Upgrade Timetable CRUD with enhanced conflict detection
+- [ ] Add Teacher Timetable endpoint: `GET /portal/teacher/timetable`
+- [ ] Add Student Timetable endpoint: `GET /portal/student/timetable`
+- [ ] Add Class Timetable endpoint: `GET /timetable/class/{class_id}`
+- [ ] Add Room Timetable endpoint: `GET /timetable/room/{room_id}`
+- [ ] Add Printable Timetable: `GET /timetable/printable/{class_id}`
+- [ ] Add Weekly/Daily Schedule endpoints
 

@@ -7,7 +7,7 @@ from sqlmodel import SQLModel, Session, select, func
 from datetime import datetime
 from . import models, schemas, auth, crud
 from .database import engine, init_db
-from .routers import users as users_router, erp as erp_router, notifications as notifications_router, superadmin as superadmin_router
+from .routers import users as users_router, erp as erp_router, notifications as notifications_router, superadmin as superadmin_router, timetable as timetable_router, report_card as report_card_router
 from .notification_service import connection_manager
 
 app = FastAPI(title="School ERP - Backend (FastAPI)")
@@ -31,10 +31,22 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 @app.post("/auth/register", response_model=schemas.UserRead)
-def register(user_in: schemas.UserCreate, school_id: int = 1):
+def register(user_in: schemas.UserCreate, school_id: int = Query(..., description="School ID to register under")):
+    """Register a new user under a specific school.
+    school_id is required and must reference an active school.
+    Super Admin users cannot be created via registration."""
     existing = crud.get_user_by_email(user_in.email)
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
+    # Validate school exists and is active
+    school = crud.get_school(school_id)
+    if not school:
+        raise HTTPException(status_code=404, detail="School not found")
+    if school.status != "active":
+        raise HTTPException(status_code=403, detail=f"Cannot register: school is {school.status}")
+    # Prevent creating Super Admin via registration
+    if user_in.role == "Super Admin":
+        raise HTTPException(status_code=403, detail="Cannot register as Super Admin")
     hashed = auth.get_password_hash(user_in.password)
     user = models.User(email=user_in.email, hashed_password=hashed, full_name=user_in.full_name, role=user_in.role, school_id=school_id)
     created = crud.create_user(user)
@@ -142,3 +154,6 @@ app.include_router(users_router.router, prefix="/api")
 app.include_router(erp_router.router, prefix="/api")
 app.include_router(notifications_router.router, prefix="/api")
 app.include_router(superadmin_router.router, prefix="/api")
+app.include_router(timetable_router.router, prefix="/api")
+app.include_router(report_card_router.router, prefix="/api")
+app.include_router(report_card_router.router, prefix="/api")

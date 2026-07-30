@@ -17,6 +17,29 @@ from ..tenant import get_current_school_id
 router = APIRouter()
 
 
+def verify_child_ownership(student_id: int, current_user: models.User) -> models.Student:
+    """Verify that the current user (parent) owns this child AND they belong to the same school.
+    Returns the Student object if valid, raises HTTPException(403) otherwise."""
+    from sqlmodel import Session, select, or_
+    from ..database import engine
+    with Session(engine) as session:
+        parent = session.exec(
+            select(models.Parent).where(models.Parent.user_id == current_user.id)
+        ).first()
+        if not parent:
+            raise HTTPException(status_code=403, detail="Parent profile not found")
+        child = session.get(models.Student, student_id)
+        if not child:
+            raise HTTPException(status_code=404, detail="Student not found")
+        # Verify parent-child relationship
+        if child.father_id != parent.id and child.mother_id != parent.id:
+            raise HTTPException(status_code=403, detail="Not authorized to access this child's data")
+        # Verify same school (cross-tenant protection)
+        if child.school_id != parent.school_id:
+            raise HTTPException(status_code=403, detail="School mismatch - access denied")
+        return child
+
+
 def _apply_tenant_filter(statement, model):
     """Apply school_id filter to a select statement based on tenant context."""
     sid = get_current_school_id()
@@ -113,6 +136,7 @@ def get_parent(parent_id: int, current_user=Depends(auth.require_roles(*ADMIN_RO
 def get_parent_profile(parent_id: int, current_user=Depends(auth.require_roles(*ADMIN_ROLES, *ALL_ADMIN_ROLES))):
     with Session(engine) as session:
         statement = select(models.Parent, models.User).join(models.User, models.Parent.user_id == models.User.id).where(models.Parent.id == parent_id)
+        statement = _apply_tenant_filter(statement, models.Parent)
         row = session.exec(statement).first()
         if not row:
             raise HTTPException(status_code=404, detail="Parent not found")
@@ -2103,10 +2127,7 @@ def parent_portal_children(current_user=Depends(auth.require_roles("Parent"))):
 @router.get("/portal/parent/children/{student_id}/profile")
 def parent_portal_child_profile(student_id: int, current_user=Depends(auth.require_roles("Parent"))):
     with Session(engine) as session:
-        parent = session.exec(select(models.Parent).where(models.Parent.user_id == current_user.id)).first()
-        child = session.get(models.Student, student_id)
-        if not child or (child.father_id != parent.id and child.mother_id != parent.id):
-            raise HTTPException(403, "Not authorized to view this child")
+        child = verify_child_ownership(student_id, current_user)
         user = session.get(models.User, child.user_id)
         enrollment = session.exec(select(models.Enrollment).where(models.Enrollment.student_id == student_id)).first()
         cls_name, sec_name, ac_year = "", "", ""
@@ -2136,10 +2157,7 @@ def parent_portal_child_profile(student_id: int, current_user=Depends(auth.requi
 @router.get("/portal/parent/children/{student_id}/attendance")
 def parent_portal_child_attendance(student_id: int, current_user=Depends(auth.require_roles("Parent"))):
     with Session(engine) as session:
-        parent = session.exec(select(models.Parent).where(models.Parent.user_id == current_user.id)).first()
-        child = session.get(models.Student, student_id)
-        if not child or (child.father_id != parent.id and child.mother_id != parent.id):
-            raise HTTPException(403, "Not authorized to view this child")
+        child = verify_child_ownership(student_id, current_user)
         records = session.exec(select(models.Attendance).where(models.Attendance.student_id == student_id).order_by(models.Attendance.date.desc()).limit(200)).all()
         monthly = []
         for m in range(1, 13):
@@ -2155,10 +2173,7 @@ def parent_portal_child_attendance(student_id: int, current_user=Depends(auth.re
 @router.get("/portal/parent/children/{student_id}/attendance/download")
 def parent_child_attendance_download(student_id: int, current_user=Depends(auth.require_roles("Parent"))):
     with Session(engine) as session:
-        parent = session.exec(select(models.Parent).where(models.Parent.user_id == current_user.id)).first()
-        child = session.get(models.Student, student_id)
-        if not child or (child.father_id != parent.id and child.mother_id != parent.id):
-            raise HTTPException(403, "Not authorized")
+        child = verify_child_ownership(student_id, current_user)
         records = session.exec(select(models.Attendance).where(models.Attendance.student_id == student_id).order_by(models.Attendance.date.desc())).all()
         headers = ["Date", "Status", "Remarks"]
         rows = [[str(r.date), r.status, r.remarks or ""] for r in records]
@@ -2168,10 +2183,7 @@ def parent_child_attendance_download(student_id: int, current_user=Depends(auth.
 @router.get("/portal/parent/children/{student_id}/homework")
 def parent_portal_child_homework(student_id: int, current_user=Depends(auth.require_roles("Parent"))):
     with Session(engine) as session:
-        parent = session.exec(select(models.Parent).where(models.Parent.user_id == current_user.id)).first()
-        child = session.get(models.Student, student_id)
-        if not child or (child.father_id != parent.id and child.mother_id != parent.id):
-            raise HTTPException(403, "Not authorized")
+        child = verify_child_ownership(student_id, current_user)
         enrollment = session.exec(select(models.Enrollment).where(models.Enrollment.student_id == student_id)).first()
         if not enrollment:
             return {"homework": []}
@@ -2188,10 +2200,7 @@ def parent_portal_child_homework(student_id: int, current_user=Depends(auth.requ
 @router.get("/portal/parent/children/{student_id}/results")
 def parent_portal_child_results(student_id: int, current_user=Depends(auth.require_roles("Parent"))):
     with Session(engine) as session:
-        parent = session.exec(select(models.Parent).where(models.Parent.user_id == current_user.id)).first()
-        child = session.get(models.Student, student_id)
-        if not child or (child.father_id != parent.id and child.mother_id != parent.id):
-            raise HTTPException(403, "Not authorized")
+        child = verify_child_ownership(student_id, current_user)
         results = session.exec(select(models.ExamResult, models.Subject, models.Exam)
             .join(models.Subject, models.ExamResult.subject_id == models.Subject.id)
             .join(models.Exam, models.ExamResult.exam_id == models.Exam.id)
@@ -2208,10 +2217,7 @@ def parent_portal_child_results(student_id: int, current_user=Depends(auth.requi
 @router.get("/portal/parent/children/{student_id}/results/report-card")
 def parent_child_report_card(student_id: int, current_user=Depends(auth.require_roles("Parent"))):
     with Session(engine) as session:
-        parent = session.exec(select(models.Parent).where(models.Parent.user_id == current_user.id)).first()
-        child = session.get(models.Student, student_id)
-        if not child or (child.father_id != parent.id and child.mother_id != parent.id):
-            raise HTTPException(403, "Not authorized")
+        child = verify_child_ownership(student_id, current_user)
         user = session.get(models.User, child.user_id)
         results = session.exec(select(models.ExamResult, models.Subject, models.Exam)
             .join(models.Subject, models.ExamResult.subject_id == models.Subject.id)
@@ -2252,10 +2258,7 @@ def parent_child_report_card(student_id: int, current_user=Depends(auth.require_
 @router.get("/portal/parent/children/{student_id}/fees")
 def parent_portal_child_fees(student_id: int, current_user=Depends(auth.require_roles("Parent"))):
     with Session(engine) as session:
-        parent = session.exec(select(models.Parent).where(models.Parent.user_id == current_user.id)).first()
-        child = session.get(models.Student, student_id)
-        if not child or (child.father_id != parent.id and child.mother_id != parent.id):
-            raise HTTPException(403, "Not authorized")
+        child = verify_child_ownership(student_id, current_user)
         assignments = session.exec(select(models.FeeAssignment, models.FeeStructure)
             .join(models.FeeStructure, models.FeeAssignment.fee_structure_id == models.FeeStructure.id)
             .where(models.FeeAssignment.student_id == student_id)).all()
@@ -2307,13 +2310,45 @@ def parent_send_message(msg_in: schemas.MessageCreate, current_user=Depends(auth
     return create_resource(msg_in, models.Message)
 
 
+@router.get("/portal/parent/children/{student_id}/certificates")
+def parent_portal_child_certificates(student_id: int, current_user=Depends(auth.require_roles("Parent"))):
+    with Session(engine) as session:
+        verify_child_ownership(student_id, current_user)
+        certificates = session.exec(select(models.Certificate).where(models.Certificate.student_id == student_id).order_by(models.Certificate.issue_date.desc())).all()
+        return {"certificates": certificates}
+
+
+@router.get("/portal/parent/children/{student_id}/certificates/{cert_id}/download")
+def parent_child_certificate_download(student_id: int, cert_id: int, current_user=Depends(auth.require_roles("Parent"))):
+    with Session(engine) as session:
+        child = verify_child_ownership(student_id, current_user)
+        cert = session.get(models.Certificate, cert_id)
+        if not cert or cert.student_id != student_id:
+            raise HTTPException(404, "Certificate not found")
+        user = session.get(models.User, child.user_id)
+        school_name = "School ERP"
+        settings = crud.get_item(models.SchoolSettings, 1)
+        if settings and settings.school_name: school_name = settings.school_name
+        pdf_bytes = make_certificate_pdf(cert, user.full_name if user else "", school_name)
+        return StreamingResponse(io.BytesIO(pdf_bytes), media_type='application/pdf',
+            headers={'Content-Disposition': f'attachment; filename="certificate_{cert_id}.pdf"'})
+
+
+@router.get("/portal/parent/children/{student_id}/documents")
+def parent_portal_child_documents(student_id: int, current_user=Depends(auth.require_roles("Parent"))):
+    with Session(engine) as session:
+        child = verify_child_ownership(student_id, current_user)
+        documents = session.exec(select(models.Document).where(
+            models.Document.owner_type == "student",
+            models.Document.owner_id == student_id
+        ).order_by(models.Document.uploaded_on.desc())).all()
+        return {"documents": documents}
+
+
 @router.get("/portal/parent/children/{student_id}/progress")
 def parent_portal_child_progress(student_id: int, current_user=Depends(auth.require_roles("Parent"))):
     with Session(engine) as session:
-        parent = session.exec(select(models.Parent).where(models.Parent.user_id == current_user.id)).first()
-        child = session.get(models.Student, student_id)
-        if not child or (child.father_id != parent.id and child.mother_id != parent.id):
-            raise HTTPException(403, "Not authorized")
+        child = verify_child_ownership(student_id, current_user)
         # Attendance trend
         monthly_att = []
         for m in range(1, 13):

@@ -1,0 +1,14 @@
+C:\Users\adeministrator\Documents\schep\backend\app\auth.py
+C:\Users\adeministrator\Documents\schep\backend\app\crud.py
+C:\Users\adeministrator\Documents\schep\backend\app\database.py
+C:\Users\adeministrator\Documents\schep\backend\app\main.py
+C:\Users\adeministrator\Documents\schep\backend\app\models.py
+C:\Users\adeministrator\Documents\schep\backend\app\notification_service.py
+C:\Users\adeministrator\Documents\schep\backend\app\schemas.py
+C:\Users\adeministrator\Documents\schep\backend\app\tenant.py
+C:\Users\adeministrator\Documents\schep\backend\app\__init__.py
+C:\Users\adeministrator\Documents\schep\backend\app\routers\erp.py
+C:\Users\adeministrator\Documents\schep\backend\app\routers\notifications.py
+C:\Users\adeministrator\Documents\schep\backend\app\routers\superadmin.py
+C:\Users\adeministrator\Documents\schep\backend\app\routers\users.py
+C:\Users\adeministrator\Documents\schep\backend\app\routers\__init__.py
