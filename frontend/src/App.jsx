@@ -24,6 +24,7 @@ import SubjectsPage from './pages/SubjectsPage'
 import SubjectAllocationsPage from './pages/SubjectAllocationsPage'
 import EnrollmentsPage from './pages/EnrollmentsPage'
 import HomeworkPage from './pages/HomeworkPage'
+import EventsPage from './pages/EventsPage'
 import TimetableDashboardPage from './pages/TimetableDashboardPage'
 import WeeklyTimetablePage from './pages/WeeklyTimetablePage'
 import DailyTimetablePage from './pages/DailyTimetablePage'
@@ -50,6 +51,14 @@ import GpaGradeMappingPage from './pages/GpaGradeMappingPage'
 import SubjectCategoryPage from './pages/SubjectCategoryPage'
 import ExaminationTypePage from './pages/ExaminationTypePage'
 import ExamWeightagePage from './pages/ExamWeightagePage'
+// Super Admin Portal
+import SuperAdminDashboardPage from './pages/SuperAdminDashboardPage'
+import SuperAdminSchoolsPage from './pages/SuperAdminSchoolsPage'
+import SuperAdminAuditLogsPage from './pages/SuperAdminAuditLogsPage'
+import SuperAdminSubscriptionsPage from './pages/SuperAdminSubscriptionsPage'
+import SuperAdminPaymentsPage from './pages/SuperAdminPaymentsPage'
+import SuperAdminSettingsPage from './pages/SuperAdminSettingsPage'
+import SetupWizardPage from './pages/SetupWizardPage'
 // Student Portal
 import StudentDashboardPage from './pages/StudentDashboardPage'
 import StudentProfilePage from './pages/StudentProfilePage'
@@ -96,7 +105,17 @@ import NotificationSettingsPage from './pages/NotificationSettings'
 // Notification Providers
 import { NotificationProvider } from './components/NotificationProvider'
 import { WebSocketProvider } from './components/WebSocketProvider'
+import ConfirmDialog from './components/ConfirmDialog'
 import './styles.css'
+
+// Initialize theme from localStorage
+const initTheme = () => {
+  const saved = localStorage.getItem('theme')
+  if (saved) {
+    document.documentElement.setAttribute('data-theme', saved)
+  }
+}
+initTheme()
 
 function RequireAuth({ children }) {
   const auth = useAuth()
@@ -110,9 +129,11 @@ function DashboardRedirect() {
   const auth = useAuth()
   if (!auth.profile) return null
   const role = auth.profile.role
+  if (role === 'Super Admin') return <Navigate to="/super-admin/dashboard" replace />
   if (role === 'Student') return <Navigate to="/student/dashboard" replace />
   if (role === 'Parent') return <Navigate to="/parent/dashboard" replace />
   if (role === 'Teacher') return <Navigate to="/teacher/dashboard" replace />
+  // Default to School Admin dashboard
   return <DashboardPage />
 }
 
@@ -128,7 +149,15 @@ function AppContent() {
           element={
             <RequireAuth>
               <Routes>
-                {/* Admin Routes */}
+                {/* ===== SUPER ADMIN PORTAL ===== */}
+                <Route path="super-admin/dashboard" element={<SuperAdminDashboardPage />} />
+                <Route path="super-admin/schools" element={<SuperAdminSchoolsPage />} />
+                <Route path="super-admin/audit-logs" element={<SuperAdminAuditLogsPage />} />
+                <Route path="super-admin/subscriptions" element={<SuperAdminSubscriptionsPage />} />
+                <Route path="super-admin/payments" element={<SuperAdminPaymentsPage />} />
+                <Route path="super-admin/settings" element={<SuperAdminSettingsPage />} />
+
+                {/* ===== SCHOOL ADMIN ROUTES ===== */}
                 <Route path="dashboard" element={<DashboardPage />} />
                 <Route path="users" element={<UsersPage />} />
                 <Route path="students" element={<StudentsPage />} />
@@ -149,7 +178,7 @@ function AppContent() {
                 <Route path="notices" element={<NoticesPage />} />
                 <Route path="events" element={<EventsPage />} />
                 <Route path="certificates" element={<CertificatesPage />} />
-                {/* ========== TIMETABLE ========== */}
+                {/* Timetable */}
                 <Route path="timetable" element={<TimetableDashboardPage />} />
                 <Route path="timetable/weekly" element={<WeeklyTimetablePage />} />
                 <Route path="timetable/daily" element={<DailyTimetablePage />} />
@@ -161,7 +190,7 @@ function AppContent() {
                 <Route path="timetable/generator" element={<TimetableGeneratorPage />} />
                 <Route path="timetable/periods" element={<PeriodMasterPage />} />
                 <Route path="timetable/teacher-availability" element={<TeacherAvailabilityPage />} />
-                {/* ========== REPORT CARDS ========== */}
+                {/* Report Cards */}
                 <Route path="report-cards" element={<ReportCardDashboardPage />} />
                 <Route path="report-cards/generate" element={<GenerateReportCardPage />} />
                 <Route path="report-cards/bulk-generate" element={<BulkGenerateReportCardsPage />} />
@@ -181,7 +210,9 @@ function AppContent() {
                 {/* Notification Routes */}
                 <Route path="notifications" element={<NotificationCenterPage />} />
                 <Route path="notifications/settings" element={<NotificationSettingsPage />} />
-                {/* Student Portal */}
+                <Route path="setup-wizard" element={<SetupWizardPage />} />
+
+                {/* ===== STUDENT PORTAL ===== */}
                 <Route path="student/dashboard" element={<StudentDashboardPage />} />
                 <Route path="student/profile" element={<StudentProfilePage />} />
                 <Route path="student/attendance" element={<StudentAttendancePage />} />
@@ -192,7 +223,8 @@ function AppContent() {
                 <Route path="student/calendar" element={<StudentCalendarPage />} />
                 <Route path="student/documents" element={<StudentDocumentsPage />} />
                 <Route path="student/messages" element={<StudentMessagesPage />} />
-                {/* Parent Portal */}
+
+                {/* ===== PARENT PORTAL ===== */}
                 <Route path="parent/*" element={
                   <ParentChildProvider>
                     <Routes>
@@ -219,7 +251,8 @@ function AppContent() {
                     </Routes>
                   </ParentChildProvider>
                 } />
-                {/* Teacher Portal */}
+
+                {/* ===== TEACHER PORTAL ===== */}
                 <Route path="teacher/dashboard" element={<TeacherDashboardPage />} />
                 <Route path="teacher/classes" element={<TeacherClassesPage />} />
                 <Route path="teacher/attendance" element={<TeacherAttendancePage />} />
@@ -230,6 +263,8 @@ function AppContent() {
                 <Route path="teacher/calendar" element={<TeacherCalendarPage />} />
                 <Route path="teacher/messages" element={<TeacherMessagesPage />} />
                 <Route path="teacher/profile" element={<TeacherProfilePage />} />
+
+                {/* Default redirect based on role */}
                 <Route path="*" element={<DashboardRedirect />} />
               </Routes>
             </RequireAuth>
@@ -237,6 +272,7 @@ function AppContent() {
         />
       </Routes>
       <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+      <ConfirmDialog />
     </WebSocketProvider>
   )
 }

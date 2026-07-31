@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { listGradeScales, createGradeScale, updateGradeScale, deleteGradeScale } from '../api'
+import { listGradeScales, createGradeScale, updateGradeScale, deleteResource } from '../api'
 
 export default function GradeScalePage() {
   const [scales, setScales] = useState([])
@@ -44,7 +44,7 @@ export default function GradeScalePage() {
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this grade scale?')) return
     try {
-      await deleteGradeScale(id)
+      await deleteResource(null, 'grade-scales', id)
       alert('Grade scale deleted')
       fetchScales()
     } catch (err) {

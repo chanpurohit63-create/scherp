@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { listGpaEngines, createGpaEngine, updateGpaEngine, deleteGpaEngine } from '../api'
+import { listGpaEngines, createGpaEngine, updateGpaEngine, deleteResource } from '../api'
 
 const GPA_SCALE_TYPES = [
   { value: '4_point', label: '4 Point Scale' },
@@ -53,7 +53,7 @@ export default function GpaEnginePage() {
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this GPA engine?')) return
     try {
-      await deleteGpaEngine(id)
+      await deleteResource(null, 'gpa-engines', id)
       alert('GPA engine deleted')
       fetchEngines()
     } catch (err) {
