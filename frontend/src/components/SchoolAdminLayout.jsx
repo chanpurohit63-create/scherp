@@ -1,9 +1,11 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.jsx'
 import NotificationBell from './NotificationBell'
 import { useNotifications } from './NotificationProvider'
 import ProfileMenu from './ProfileMenu'
+import ThemeToggle from './ThemeToggle'
+import GlobalSearch from './GlobalSearch'
 
 const NAV_SECTIONS = [
   {
@@ -67,7 +69,7 @@ const NAV_SECTIONS = [
   {
     label: 'System',
     items: [
-      { to: '/settings', label: 'Settings', icon: '??' },
+      { to: '/settings', label: 'Organization Settings', icon: '??' },
       { to: '/notifications', label: 'Notifications', icon: '??' },
     ],
   },
@@ -78,14 +80,6 @@ export default function SchoolAdminLayout({ title, children, breadcrumbs }) {
   const navigate = useNavigate()
   const location = useLocation()
   const { unreadCount } = useNotifications()
-  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') === 'dark')
-
-  const toggleTheme = () => {
-    const newTheme = darkMode ? 'light' : 'dark'
-    setDarkMode(!darkMode)
-    localStorage.setItem('theme', newTheme)
-    document.documentElement.setAttribute('data-theme', newTheme)
-  }
 
   const getInitials = (name) => {
     if (!name) return 'A'
@@ -101,7 +95,7 @@ export default function SchoolAdminLayout({ title, children, breadcrumbs }) {
     <div className="app-layout">
       <aside className="sidebar">
         <div className="sidebar-logo">
-          <div className="logo-icon">??</div>
+          <div className="logo-icon">?</div>
           <span className="logo-text">School ERP</span>
         </div>
         {NAV_SECTIONS.map((section) => {
@@ -157,9 +151,8 @@ export default function SchoolAdminLayout({ title, children, breadcrumbs }) {
             <h1 style={{ margin: 0, fontSize: '1.35rem', fontWeight: 700 }}>{title}</h1>
           </div>
           <div className="main-content-header-right">
-            <button className="theme-toggle" onClick={toggleTheme} title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}>
-              {darkMode ? '?? Light' : '?? Dark'}
-            </button>
+            <GlobalSearch />
+            <ThemeToggle />
             <NotificationBell unreadCount={unreadCount} />
             <ProfileMenu />
           </div>

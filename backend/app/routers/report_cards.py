@@ -141,10 +141,28 @@ def _build_report_card_data(report_card: models.ReportCard, school: models.Schoo
             if sec:
                 section_name = sec.name
 
+    # Load SchoolSettings for branding (logo, signature, stamp, principal name)
+    principal_name = school.principal_name
+    signature_path = None
+    stamp_path = None
+    logo_path = school.logo
+    with Session(engine) as session:
+        stmt = select(models.SchoolSettings).where(models.SchoolSettings.school_id == school.id)
+        settings = session.exec(stmt).first()
+        if settings:
+            if settings.logo_path:
+                logo_path = settings.logo_path
+            if settings.principal_name:
+                principal_name = settings.principal_name
+            if settings.signature_path:
+                signature_path = settings.signature_path
+            if settings.stamp_path:
+                stamp_path = settings.stamp_path
+
     return {
         "school_name": school.school_name or "",
         "school_address": school.address or "",
-        "school_logo": school.logo if school.logo and os.path.exists(school.logo) else None,
+        "school_logo": logo_path if logo_path and os.path.exists(logo_path) else None,
         "school_phone": school.phone or "",
         "school_email": school.email or "",
         "school_website": school.website or "",
@@ -175,8 +193,9 @@ def _build_report_card_data(report_card: models.ReportCard, school: models.Schoo
         "teacher_remarks": report_card.teacher_remarks or "",
         "principal_remarks": report_card.principal_remarks or "",
         "verification_id": report_card.verification_id,
-        "principal_name": school.principal_name or "",
-        "signature_path": None,  # Could be loaded from school settings
+        "principal_name": principal_name or "",
+        "signature_path": signature_path if signature_path and os.path.exists(signature_path) else None,
+        "stamp_path": stamp_path if stamp_path and os.path.exists(stamp_path) else None,
         "verification_base_url": "",
         "generated_on": report_card.generated_on,
     }

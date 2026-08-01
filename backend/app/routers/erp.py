@@ -1477,13 +1477,31 @@ def update_settings(settings_update: schemas.SchoolSettingsUpdate, current_user=
 
 @router.post("/settings/logo", status_code=status.HTTP_200_OK)
 async def upload_logo(file: UploadFile = File(...), current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
+    return _upload_settings_file(file, "logo")
+
+
+@router.post("/settings/stamp", status_code=status.HTTP_200_OK)
+async def upload_stamp(file: UploadFile = File(...), current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
+    return _upload_settings_file(file, "stamp")
+
+
+@router.post("/settings/signature", status_code=status.HTTP_200_OK)
+async def upload_signature(file: UploadFile = File(...), current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
+    return _upload_settings_file(file, "signature")
+
+
+def _upload_settings_file(file: UploadFile, field_name: str) -> dict:
+    """Upload a settings asset (logo, stamp, signature) and update SchoolSettings."""
     sid = get_current_school_id()
     upload_dir = Path("static/uploads")
     if sid is not None:
         upload_dir = upload_dir / f"school_{sid}"
     upload_dir.mkdir(parents=True, exist_ok=True)
-    file_path = upload_dir / f"logo_{file.filename}"
-    contents = await file.read()
+    import time
+    unique = int(time.time() * 1000)
+    file_ext = Path(file.filename or "file").suffix or ".png"
+    file_path = upload_dir / f"{field_name}_{unique}{file_ext}"
+    contents = file.file.read()
     file_path.write_bytes(contents)
     with Session(engine) as session:
         if sid is not None:
@@ -1492,10 +1510,10 @@ async def upload_logo(file: UploadFile = File(...), current_user=Depends(auth.re
         else:
             settings = None
         if not settings:
-            settings = crud.create_item(models.SchoolSettings(school_name="My School", logo_path=str(file_path)))
+            settings = crud.create_item(models.SchoolSettings(school_name="My School", **{f"{field_name}_path": str(file_path), "school_id": sid or 0}))
         else:
-            update_resource(models.SchoolSettings, settings.id, {"logo_path": str(file_path)})
-    return {"logo_path": str(file_path)}
+            update_resource(models.SchoolSettings, settings.id, {f"{field_name}_path": str(file_path)})
+    return {f"{field_name}_path": str(file_path)}
 
 
 # ========== NOTICE ENHANCEMENTS ==========

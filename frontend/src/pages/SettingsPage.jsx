@@ -6,23 +6,36 @@ import toast from 'react-hot-toast'
 
 export default function SettingsPage() {
   const auth = useAuth()
-  const [settings, setSettings] = useState({ school_name: '', address: '', phone: '', email: '', logo_path: '', academic_year_id: '' })
+  const [settings, setSettings] = useState({
+    school_name: '', address: '', phone: '', email: '', logo_path: '',
+    principal_name: '', theme_color: '#4f46e5', stamp_path: '', signature_path: '',
+    academic_year_id: ''
+  })
   const [academicYears, setAcademicYears] = useState([])
   const [profileForm, setProfileForm] = useState({ full_name: auth.profile?.full_name || '' })
   const [passwordForm, setPasswordForm] = useState({ old_password: '', new_password: '', confirm_password: '' })
   const [loading, setLoading] = useState(false)
-  const [localSettings, setLocalSettings] = useState({ principal_name: '', theme_color: '#4f46e5', stamp_path: '', signature_path: '' })
 
   useEffect(() => {
     loadSettings()
     loadAcademicYears()
-    loadLocalSettings()
   }, [])
 
   const loadSettings = async () => {
     try {
       const data = await getResource(auth.token, 'settings', '')
-      setSettings({ school_name: data.school_name || '', address: data.address || '', phone: data.phone || '', email: data.email || '', logo_path: data.logo_path || '', academic_year_id: data.academic_year_id || '' })
+      setSettings({
+        school_name: data.school_name || '',
+        address: data.address || '',
+        phone: data.phone || '',
+        email: data.email || '',
+        logo_path: data.logo_path || '',
+        principal_name: data.principal_name || '',
+        theme_color: data.theme_color || '#4f46e5',
+        stamp_path: data.stamp_path || '',
+        signature_path: data.signature_path || '',
+        academic_year_id: data.academic_year_id || ''
+      })
     } catch (err) {
       // silent
     }
@@ -37,24 +50,26 @@ export default function SettingsPage() {
     }
   }
 
-  const loadLocalSettings = () => {
-    const stored = localStorage.getItem('school-local-settings')
-    if (stored) {
-      setLocalSettings(JSON.parse(stored))
-    }
-  }
-
-  const saveLocalSettings = (newSettings) => {
-    localStorage.setItem('school-local-settings', JSON.stringify(newSettings))
-    setLocalSettings(newSettings)
-  }
-
   const handleSaveSettings = async (e) => {
     e.preventDefault()
     const toastId = toast.loading('Saving settings...')
     try {
-      await updateResource(auth.token, 'settings', '', settings)
-      saveLocalSettings(localSettings)
+      // Save ALL settings to the database (not localStorage)
+      await updateResource(auth.token, 'settings', '', {
+        school_name: settings.school_name,
+        address: settings.address,
+        phone: settings.phone,
+        email: settings.email,
+        principal_name: settings.principal_name,
+        theme_color: settings.theme_color,
+        stamp_path: settings.stamp_path,
+        signature_path: settings.signature_path,
+        logo_path: settings.logo_path,
+        academic_year_id: settings.academic_year_id ? Number(settings.academic_year_id) : undefined,
+      })
+      // Apply theme color immediately
+      document.documentElement.style.setProperty('--primary-color', settings.theme_color)
+      localStorage.setItem('theme-color', settings.theme_color)
       toast.success('Settings saved!', { id: toastId })
     } catch (err) {
       toast.error(err.message, { id: toastId })
@@ -70,7 +85,13 @@ export default function SettingsPage() {
       setSettings((prev) => ({ ...prev, logo_path: result.logo_path }))
       toast.success('Logo uploaded!', { id: toastId })
     } catch (err) {
-      toast.error(err.message, { id: toastId })
+      // Fallback: store as base64
+      const reader = new FileReader()
+      reader.onload = () => {
+        setSettings((prev) => ({ ...prev, logo_path: reader.result }))
+        toast.success('Logo saved!', { id: toastId })
+      }
+      reader.readAsDataURL(file)
     }
   }
 
@@ -80,19 +101,13 @@ export default function SettingsPage() {
     const toastId = toast.loading('Uploading stamp...')
     try {
       const result = await uploadFile(auth.token, 'settings/stamp', file)
-      setLocalSettings((prev) => {
-        const updated = { ...prev, stamp_path: result.logo_path || result.path || '' }
-        saveLocalSettings(updated)
-        return updated
-      })
+      setSettings((prev) => ({ ...prev, stamp_path: result.stamp_path || result.logo_path || '' }))
       toast.success('Stamp uploaded!', { id: toastId })
     } catch (err) {
-      // Fallback: store as base64 in localStorage
+      // Fallback: store as base64
       const reader = new FileReader()
       reader.onload = () => {
-        const updated = { ...localSettings, stamp_path: reader.result }
-        saveLocalSettings(updated)
-        setLocalSettings(updated)
+        setSettings((prev) => ({ ...prev, stamp_path: reader.result }))
         toast.success('Stamp saved!', { id: toastId })
       }
       reader.readAsDataURL(file)
@@ -105,19 +120,13 @@ export default function SettingsPage() {
     const toastId = toast.loading('Uploading signature...')
     try {
       const result = await uploadFile(auth.token, 'settings/signature', file)
-      setLocalSettings((prev) => {
-        const updated = { ...prev, signature_path: result.logo_path || result.path || '' }
-        saveLocalSettings(updated)
-        return updated
-      })
+      setSettings((prev) => ({ ...prev, signature_path: result.signature_path || result.logo_path || '' }))
       toast.success('Signature uploaded!', { id: toastId })
     } catch (err) {
-      // Fallback: store as base64 in localStorage
+      // Fallback: store as base64
       const reader = new FileReader()
       reader.onload = () => {
-        const updated = { ...localSettings, signature_path: reader.result }
-        saveLocalSettings(updated)
-        setLocalSettings(updated)
+        setSettings((prev) => ({ ...prev, signature_path: reader.result }))
         toast.success('Signature saved!', { id: toastId })
       }
       reader.readAsDataURL(file)
@@ -155,6 +164,14 @@ export default function SettingsPage() {
     }
   }
 
+  const resolveAssetUrl = (path) => {
+    if (!path) return null
+    if (path.startsWith('data:')) return path
+    // Convert relative filesystem path to accessible URL
+    const filename = path.split(/[\\/]/).pop()
+    return `${BACKEND_URL}/static/uploads/school_${auth.profile?.school_id || ''}/${filename}`
+  }
+
   return (
     <SchoolAdminLayout title="Organization Settings" breadcrumbs={[{ label: 'Settings', to: null }]}>
       <div className="settings-grid">
@@ -183,9 +200,16 @@ export default function SettingsPage() {
               </div>
               <div className="form-group">
                 <label>Principal Name</label>
-                <input className="input" value={localSettings.principal_name} onChange={(e) => setLocalSettings({ ...localSettings, principal_name: e.target.value })} />
+                <input className="input" value={settings.principal_name} onChange={(e) => setSettings({ ...settings, principal_name: e.target.value })} />
               </div>
               <div className="form-group">
+                <label>Theme Color</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <input type="color" value={settings.theme_color} onChange={(e) => setSettings({ ...settings, theme_color: e.target.value })} style={{ width: 50, height: 40, border: 'none', borderRadius: 8, cursor: 'pointer' }} />
+                  <input className="input" value={settings.theme_color} onChange={(e) => setSettings({ ...settings, theme_color: e.target.value })} style={{ flex: 1 }} />
+                </div>
+              </div>
+              <div className="form-group" style={{ gridColumn: 'span 2' }}>
                 <label>Active Academic Year</label>
                 <select className="input" value={settings.academic_year_id} onChange={(e) => setSettings({ ...settings, academic_year_id: e.target.value })}>
                   <option value="">None</option>
@@ -205,31 +229,24 @@ export default function SettingsPage() {
             <h2>Branding & Assets</h2>
           </div>
           <div className="form-grid">
-            <div className="form-group" style={{ gridColumn: 'span 2' }}>
-              <label>Theme Color</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <input type="color" value={localSettings.theme_color} onChange={(e) => setLocalSettings({ ...localSettings, theme_color: e.target.value })} style={{ width: 50, height: 40, border: 'none', borderRadius: 8, cursor: 'pointer' }} />
-                <input className="input" value={localSettings.theme_color} onChange={(e) => setLocalSettings({ ...localSettings, theme_color: e.target.value })} style={{ flex: 1 }} />
-              </div>
-            </div>
             <div className="form-group">
               <label>School Logo</label>
-              {settings.logo_path && <img src={`${BACKEND_URL}/static/uploads/${settings.logo_path.split('/').pop()}`} alt="Logo" style={{ maxWidth: 150, marginBottom: 8, borderRadius: 8 }} />}
+              {(settings.logo_path) && <img src={resolveAssetUrl(settings.logo_path)} alt="Logo" style={{ maxWidth: 150, marginBottom: 8, borderRadius: 8 }} />}
               <input type="file" accept="image/*" onChange={handleLogoUpload} className="input" />
             </div>
             <div className="form-group">
               <label>School Stamp</label>
-              {localSettings.stamp_path && <img src={localSettings.stamp_path.startsWith('data:') ? localSettings.stamp_path : `${BACKEND_URL}/static/uploads/${localSettings.stamp_path.split('/').pop()}`} alt="Stamp" style={{ maxWidth: 150, marginBottom: 8, borderRadius: 8 }} />}
+              {settings.stamp_path && <img src={resolveAssetUrl(settings.stamp_path)} alt="Stamp" style={{ maxWidth: 150, marginBottom: 8, borderRadius: 8 }} />}
               <input type="file" accept="image/*" onChange={handleStampUpload} className="input" />
             </div>
             <div className="form-group" style={{ gridColumn: 'span 2' }}>
               <label>Principal Signature</label>
-              {localSettings.signature_path && <img src={localSettings.signature_path.startsWith('data:') ? localSettings.signature_path : `${BACKEND_URL}/static/uploads/${localSettings.signature_path.split('/').pop()}`} alt="Signature" style={{ maxWidth: 200, marginBottom: 8, borderRadius: 8 }} />}
+              {settings.signature_path && <img src={resolveAssetUrl(settings.signature_path)} alt="Signature" style={{ maxWidth: 200, marginBottom: 8, borderRadius: 8 }} />}
               <input type="file" accept="image/*" onChange={handleSignatureUpload} className="input" />
             </div>
           </div>
           <div className="form-actions">
-            <button className="btn btn-primary" onClick={(e) => { e.preventDefault(); saveLocalSettings(localSettings); toast.success('Branding saved!') }}>Save Branding</button>
+            <button className="btn btn-primary" onClick={handleSaveSettings}>Save Branding</button>
           </div>
         </section>
 

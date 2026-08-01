@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.jsx'
 import NotificationBell from './NotificationBell'
 import { useNotifications } from './NotificationProvider'
+import ProfileMenu from './ProfileMenu'
 
 const NAV_ITEMS = [
   { to: '/teacher/dashboard', label: 'Dashboard', icon: '📊' },
@@ -22,10 +23,13 @@ export default function TeacherLayout({ title, children, breadcrumbs }) {
   const navigate = useNavigate()
   const location = useLocation()
   const { unreadCount } = useNotifications()
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') === 'dark')
 
-  const handleLogout = () => {
-    auth.logout()
-    navigate('/login')
+  const toggleTheme = () => {
+    const newTheme = darkMode ? 'light' : 'dark'
+    setDarkMode(!darkMode)
+    localStorage.setItem('theme', newTheme)
+    document.documentElement.setAttribute('data-theme', newTheme)
   }
 
   const getInitials = (name) => {
@@ -40,7 +44,7 @@ export default function TeacherLayout({ title, children, breadcrumbs }) {
           <div className="logo-icon">👩‍🏫</div>
           <span className="logo-text">Teacher Portal</span>
         </div>
-        <div className="sidebar-section-label">Navigation</div>
+        <div className="sidebar-section-label">Menu</div>
         <nav className="sidebar-nav">
           {NAV_ITEMS.map((item) => {
             const isActive = location.pathname === item.to || location.pathname.startsWith(item.to + '/')
@@ -53,9 +57,6 @@ export default function TeacherLayout({ title, children, breadcrumbs }) {
               >
                 <span className="icon">{item.icon}</span>
                 <span className="sidebar-label">{item.label}</span>
-                {item.label === 'Messages' && unreadCount > 0 && (
-                  <span className="sidebar-badge">{unreadCount}</span>
-                )}
               </NavLink>
             )
           })}
@@ -70,10 +71,6 @@ export default function TeacherLayout({ title, children, breadcrumbs }) {
               <div className="sidebar-user-role">Teacher</div>
             </div>
           </div>
-          <button className="btn-logout" onClick={handleLogout}>
-            <span>🚪</span>
-            <span>Logout</span>
-          </button>
         </div>
       </aside>
       <main className="main-content">
@@ -92,7 +89,11 @@ export default function TeacherLayout({ title, children, breadcrumbs }) {
             <h1 style={{ margin: 0, fontSize: '1.35rem', fontWeight: 700 }}>{title}</h1>
           </div>
           <div className="main-content-header-right">
+            <button className="theme-toggle" onClick={toggleTheme} title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}>
+              {darkMode ? '☀️ Light' : '🌙 Dark'}
+            </button>
             <NotificationBell unreadCount={unreadCount} />
+            <ProfileMenu />
           </div>
         </div>
         <div className="main-content-body">

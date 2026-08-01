@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.jsx'
 import NotificationBell from './NotificationBell'
 import { useNotifications } from './NotificationProvider'
+import ProfileMenu from './ProfileMenu'
 import ChildSwitcher from './ChildSwitcher'
 
 const NAV_ITEMS = [
@@ -10,27 +11,26 @@ const NAV_ITEMS = [
   { to: '/parent/children', label: 'My Children', icon: '👨‍👩‍👧‍👦' },
   { to: '/parent/attendance', label: 'Attendance', icon: '📋' },
   { to: '/parent/homework', label: 'Homework', icon: '📝' },
-  { to: '/parent/exams', label: 'Exam Results', icon: '🏆' },
-  { to: '/parent/fees', label: 'Fee Payments', icon: '💰' },
-  { to: '/parent/payment-history', label: 'Payment History', icon: '🧾' },
-  { to: '/parent/certificates', label: 'Certificates', icon: '🎓' },
-  { to: '/parent/documents', label: 'Documents', icon: '📄' },
-  { to: '/parent/notices', label: 'School Notices', icon: '📢' },
-  { to: '/parent/events', label: 'Events', icon: '📅' },
+  { to: '/parent/exams', label: 'Exams', icon: '📝' },
+  { to: '/parent/fees', label: 'Fees', icon: '💰' },
+  { to: '/parent/notices', label: 'Notices', icon: '📢' },
+  { to: '/parent/calendar', label: 'Calendar', icon: '📅' },
   { to: '/parent/messages', label: 'Messages', icon: '💬' },
   { to: '/parent/profile', label: 'Profile', icon: '👤' },
-  { to: '/parent/change-password', label: 'Change Password', icon: '🔑' },
 ]
 
-export default function ParentLayout({ title, children, breadcrumbs, hideChildSwitcher }) {
+export default function ParentLayout({ title, children, breadcrumbs }) {
   const auth = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const { unreadCount } = useNotifications()
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') === 'dark')
 
-  const handleLogout = () => {
-    auth.logout()
-    navigate('/login')
+  const toggleTheme = () => {
+    const newTheme = darkMode ? 'light' : 'dark'
+    setDarkMode(!darkMode)
+    localStorage.setItem('theme', newTheme)
+    document.documentElement.setAttribute('data-theme', newTheme)
   }
 
   const getInitials = (name) => {
@@ -45,7 +45,7 @@ export default function ParentLayout({ title, children, breadcrumbs, hideChildSw
           <div className="logo-icon">👪</div>
           <span className="logo-text">Parent Portal</span>
         </div>
-        <div className="sidebar-section-label">Navigation</div>
+        <div className="sidebar-section-label">Menu</div>
         <nav className="sidebar-nav">
           {NAV_ITEMS.map((item) => {
             const isActive = location.pathname === item.to || location.pathname.startsWith(item.to + '/')
@@ -58,9 +58,6 @@ export default function ParentLayout({ title, children, breadcrumbs, hideChildSw
               >
                 <span className="icon">{item.icon}</span>
                 <span className="sidebar-label">{item.label}</span>
-                {item.label === 'Messages' && unreadCount > 0 && (
-                  <span className="sidebar-badge">{unreadCount}</span>
-                )}
               </NavLink>
             )
           })}
@@ -75,10 +72,6 @@ export default function ParentLayout({ title, children, breadcrumbs, hideChildSw
               <div className="sidebar-user-role">Parent</div>
             </div>
           </div>
-          <button className="btn-logout" onClick={handleLogout}>
-            <span>🚪</span>
-            <span>Logout</span>
-          </button>
         </div>
       </aside>
       <main className="main-content">
@@ -97,8 +90,12 @@ export default function ParentLayout({ title, children, breadcrumbs, hideChildSw
             <h1 style={{ margin: 0, fontSize: '1.35rem', fontWeight: 700 }}>{title}</h1>
           </div>
           <div className="main-content-header-right">
-            {!hideChildSwitcher && <ChildSwitcher />}
+            <ChildSwitcher />
+            <button className="theme-toggle" onClick={toggleTheme} title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}>
+              {darkMode ? '☀️ Light' : '🌙 Dark'}
+            </button>
             <NotificationBell unreadCount={unreadCount} />
+            <ProfileMenu />
           </div>
         </div>
         <div className="main-content-body">

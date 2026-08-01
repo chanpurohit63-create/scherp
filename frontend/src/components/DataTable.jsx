@@ -4,7 +4,7 @@ export default function DataTable({
   columns = [],
   data = [],
   loading = false,
-  pageSize = 10,
+  pageSize: initialPageSize = 10,
   searchable = true,
   searchPlaceholder = 'Search...',
   searchKeys = [],
@@ -14,12 +14,18 @@ export default function DataTable({
   emptyStateMessage = '',
   actions = null,
   rowActions = null,
+  bulkSelectable = false,
+  selectedRows = [],
+  onSelectionChange = null,
+  pageSizeOptions = [10, 20, 50, 100],
 }) {
   const [search, setSearch] = useState('')
+  const [pageSize, setPageSize] = useState(initialPageSize)
   const [currentPage, setCurrentPage] = useState(1)
   const [sortColumn, setSortColumn] = useState(null)
   const [sortDirection, setSortDirection] = useState('asc')
   const [filterValues, setFilterValues] = useState({})
+  const [selectAll, setSelectAll] = useState(false)
 
   // Filter data
   const filteredData = useMemo(() => {
@@ -126,6 +132,13 @@ export default function DataTable({
               ))}
             </select>
           ))}
+          {(Object.keys(filterValues).some(k => filterValues[k]) || search) && (
+            <button className="btn btn-ghost btn-sm" onClick={() => {
+              setFilterValues({})
+              setSearch('')
+              setCurrentPage(1)
+            }}>Clear Filters</button>
+          )}
           {actions}
         </div>
       </div>
@@ -135,6 +148,20 @@ export default function DataTable({
         <table className="data-table">
           <thead>
             <tr>
+              {bulkSelectable && (
+                <th style={{ width: 40 }}>
+                  <input
+                    type="checkbox"
+                    checked={selectAll}
+                    onChange={(e) => {
+                      setSelectAll(e.target.checked)
+                      if (onSelectionChange) {
+                        onSelectionChange(e.target.checked ? paginatedData.map(r => r.id) : [])
+                      }
+                    }}
+                  />
+                </th>
+              )}
               {columns.map(col => (
                 <th
                   key={col.key}
@@ -155,7 +182,7 @@ export default function DataTable({
           <tbody>
             {paginatedData.length === 0 ? (
               <tr>
-                <td colSpan={columns.length + (rowActions ? 1 : 0)}>
+                <td colSpan={columns.length + (rowActions ? 1 : 0) + (bulkSelectable ? 1 : 0)}>
                   <div className="empty-state">
                     <div className="empty-state-icon">{emptyStateIcon}</div>
                     <h3>{emptyStateTitle}</h3>
@@ -165,6 +192,22 @@ export default function DataTable({
               </tr>
             ) : paginatedData.map((row, i) => (
               <tr key={row.id || i}>
+                {bulkSelectable && (
+                  <td>
+                    <input
+                      type="checkbox"
+                      checked={selectedRows.includes(row.id)}
+                      onChange={(e) => {
+                        if (onSelectionChange) {
+                          const newSelected = e.target.checked
+                            ? [...selectedRows, row.id]
+                            : selectedRows.filter(id => id !== row.id)
+                          onSelectionChange(newSelected)
+                        }
+                      }}
+                    />
+                  </td>
+                )}
                 {columns.map(col => (
                   <td key={col.key}>
                     {col.render ? col.render(row) : (row[col.key] ?? '-')}
@@ -179,12 +222,30 @@ export default function DataTable({
         </table>
       </div>
 
-      {/* Footer with pagination */}
+      {/* Footer with pagination and page size selector */}
       {totalPages > 1 && (
         <div className="table-footer">
-          <span className="pagination-info">
-            Showing {(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, filteredData.length)} of {filteredData.length}
-          </span>
+          <div className="table-footer-left">
+            <span className="pagination-info">
+              Showing {(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, filteredData.length)} of {filteredData.length}
+            </span>
+            <div className="page-size-selector">
+              <span>Rows:</span>
+              <select
+                className="input"
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value))
+                  setCurrentPage(1)
+                }}
+                style={{ width: 70 }}
+              >
+                {pageSizeOptions.map(opt => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
+            </div>
+          </div>
           <div className="pagination">
             <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1}>«</button>
             <button onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1}>‹</button>

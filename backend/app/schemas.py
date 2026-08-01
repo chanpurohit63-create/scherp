@@ -1,6 +1,6 @@
 from datetime import date, datetime
 from typing import Optional, List
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, validator
 
 
 class UserCreate(BaseModel):
@@ -49,12 +49,21 @@ class RoleRead(BaseModel):
         orm_mode = True
 
 
-# ========== SCHOOL (Multi-Tenant) ==========
+import re
+
+def validate_phone(v: Optional[str]) -> Optional[str]:
+    if v is not None:
+        # Allow digits, +, -, spaces, and parentheses
+        cleaned = re.sub(r'[\s\-\+\(\)]', '', v)
+        if not cleaned.isdigit() or len(cleaned) < 7 or len(cleaned) > 15:
+            raise ValueError(f"Invalid phone number: '{v}'. Must contain 7-15 digits.")
+    return v
+
 
 class SchoolCreate(BaseModel):
     school_name: str
     school_code: str
-    email: Optional[str] = None
+    email: Optional[EmailStr] = None
     phone: Optional[str] = None
     address: Optional[str] = None
     city: Optional[str] = None
@@ -68,6 +77,10 @@ class SchoolCreate(BaseModel):
     currency: Optional[str] = "USD"
     student_limit: Optional[int] = 0
     teacher_limit: Optional[int] = 0
+
+    @validator('phone', pre=True, always=False)
+    def validate_phone_field(cls, v):
+        return validate_phone(v)
 
 
 class SchoolUpdate(BaseModel):
@@ -484,7 +497,7 @@ class TeacherAttendanceRead(BaseModel):
 
 
 class TeacherAttendanceUpdate(BaseModel):
-    date: Optional[date] = None # pyright: ignore[reportInvalidTypeForm]
+    date: Optional[date] = None # type: ignore
     status: Optional[str] = None
     remarks: Optional[str] = None
 
@@ -728,11 +741,16 @@ class CertificateUpdate(BaseModel):
 
 class SchoolSettingsRead(BaseModel):
     id: int
+    school_id: Optional[int] = None
     school_name: Optional[str] = None
     address: Optional[str] = None
     phone: Optional[str] = None
     email: Optional[str] = None
     logo_path: Optional[str] = None
+    principal_name: Optional[str] = None
+    theme_color: Optional[str] = None
+    stamp_path: Optional[str] = None
+    signature_path: Optional[str] = None
     academic_year_id: Optional[int] = None
 
     class Config:
@@ -745,6 +763,10 @@ class SchoolSettingsUpdate(BaseModel):
     phone: Optional[str] = None
     email: Optional[str] = None
     logo_path: Optional[str] = None
+    principal_name: Optional[str] = None
+    theme_color: Optional[str] = None
+    stamp_path: Optional[str] = None
+    signature_path: Optional[str] = None
     academic_year_id: Optional[int] = None
 
 
@@ -798,8 +820,9 @@ class TimetableCreate(BaseModel):
     period: int
     start_time: Optional[str] = None
     end_time: Optional[str] = None
-    room: Optional[str] = None
+    room_id: Optional[int] = None
     academic_year_id: int
+    remarks: Optional[str] = None
 
 
 class TimetableRead(BaseModel):
@@ -812,8 +835,14 @@ class TimetableRead(BaseModel):
     period: int
     start_time: Optional[str] = None
     end_time: Optional[str] = None
-    room: Optional[str] = None
+    room_id: Optional[int] = None
     academic_year_id: int
+    status: str = "active"
+    remarks: Optional[str] = None
+    created_by: Optional[int] = None
+    updated_by: Optional[int] = None
+    created_on: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     class Config:
         orm_mode = True
@@ -828,8 +857,175 @@ class TimetableUpdate(BaseModel):
     period: Optional[int] = None
     start_time: Optional[str] = None
     end_time: Optional[str] = None
-    room: Optional[str] = None
+    room_id: Optional[int] = None
     academic_year_id: Optional[int] = None
+    status: Optional[str] = None
+    remarks: Optional[str] = None
+
+
+class PeriodMasterCreate(BaseModel):
+    period_name: str
+    period_number: int
+    start_time: str
+    end_time: str
+    is_break: Optional[bool] = False
+    is_assembly: Optional[bool] = False
+    is_sports: Optional[bool] = False
+    is_library: Optional[bool] = False
+    is_practical: Optional[bool] = False
+    sort_order: Optional[int] = 0
+
+
+class PeriodMasterRead(BaseModel):
+    id: int
+    period_name: str
+    period_number: int
+    start_time: str
+    end_time: str
+    is_break: bool
+    is_assembly: bool
+    is_sports: bool
+    is_library: bool
+    is_practical: bool
+    sort_order: int
+    created_on: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        orm_mode = True
+
+
+class PeriodMasterUpdate(BaseModel):
+    period_name: Optional[str] = None
+    period_number: Optional[int] = None
+    start_time: Optional[str] = None
+    end_time: Optional[str] = None
+    is_break: Optional[bool] = None
+    is_assembly: Optional[bool] = None
+    is_sports: Optional[bool] = None
+    is_library: Optional[bool] = None
+    is_practical: Optional[bool] = None
+    sort_order: Optional[int] = None
+
+
+class TeacherAvailabilityCreate(BaseModel):
+    teacher_id: int
+    day_of_week: int
+    period_number: int
+    is_available: bool = True
+    availability_type: Optional[str] = "available"
+
+
+class TeacherAvailabilityRead(BaseModel):
+    id: int
+    teacher_id: int
+    day_of_week: int
+    period_number: int
+    is_available: bool
+    availability_type: str
+    created_on: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        orm_mode = True
+
+
+class TeacherAvailabilityUpdate(BaseModel):
+    is_available: Optional[bool] = None
+    availability_type: Optional[str] = None
+
+
+class TimetableGeneratorLogRead(BaseModel):
+    id: int
+    academic_year_id: int
+    generated_by: Optional[int] = None
+    generation_type: str
+    source_academic_year_id: Optional[int] = None
+    source_section_id: Optional[int] = None
+    config: Optional[str] = None
+    result_summary: Optional[str] = None
+    conflicts_found: int = 0
+    conflicts_resolved: int = 0
+    status: str
+    created_on: Optional[datetime] = None
+
+    class Config:
+        orm_mode = True
+
+
+class TimetableConflictLogRead(BaseModel):
+    id: int
+    conflict_type: str
+    conflict_description: str
+    day_of_week: int
+    period_number: int
+    start_time: Optional[str] = None
+    end_time: Optional[str] = None
+    teacher_id: Optional[int] = None
+    class_id: Optional[int] = None
+    section_id: Optional[int] = None
+    room_id: Optional[int] = None
+    subject_id: Optional[int] = None
+    conflicting_record_id: Optional[int] = None
+    resolved: bool = False
+    created_on: Optional[datetime] = None
+
+    class Config:
+        orm_mode = True
+
+
+class TimetableDashboardRead(BaseModel):
+    total_classes: int = 0
+    total_teachers: int = 0
+    today_classes: int = 0
+    running_classes: int = 0
+    free_rooms: int = 0
+    occupied_rooms: int = 0
+    teacher_utilization: float = 0.0
+    room_utilization: float = 0.0
+    avg_teaching_hours: float = 0.0
+    upcoming_classes: List[dict] = []
+
+    class Config:
+        orm_mode = True
+
+
+class TimetableGenerateRequest(BaseModel):
+    academic_year_id: int
+    working_days: List[int] = [0, 1, 2, 3, 4, 5]
+    school_start_time: str = "08:00"
+    school_end_time: str = "15:00"
+    periods_per_day: int = 6
+    break_periods: List[int] = []
+    max_periods_per_day: Optional[int] = None
+    max_periods_per_week: Optional[int] = None
+    auto_assign_teachers: bool = True
+    auto_assign_rooms: bool = True
+    auto_assign_periods: bool = True
+    copy_from_academic_year_id: Optional[int] = None
+    copy_from_section_id: Optional[int] = None
+    copy_to_section_id: Optional[int] = None
+
+
+class TimetableConflictCheck(BaseModel):
+    day_of_week: int
+    period: int
+    start_time: str
+    end_time: str
+    teacher_id: int
+    class_id: int
+    section_id: Optional[int] = None
+    room_id: Optional[int] = None
+    subject_id: Optional[int] = None
+    exclude_timetable_id: Optional[int] = None
+
+
+class TimetableConflictResult(BaseModel):
+    has_conflict: bool
+    conflicts: List[dict] = []
+    messages: List[str] = []
+    status: Optional[str] = None
+    remarks: Optional[str] = None
 
 
 class NotificationCreate(BaseModel):
@@ -930,14 +1126,10 @@ class NotificationPreferenceUpdate(BaseModel):
     quiet_hours_end: Optional[str] = None
 
 
-# ========== PASSWORD CHANGE ==========
-
 class PasswordChange(BaseModel):
     current_password: str
     new_password: str
 
-
-# ========== AUDIT LOG ==========
 
 class AuditLogRead(BaseModel):
     id: int
@@ -965,8 +1157,6 @@ class AuditLogCreate(BaseModel):
     after_values: Optional[str] = None
 
 
-# ========== SUBSCRIPTION PLANS ==========
-
 class SubscriptionPlan(BaseModel):
     name: str
     max_students: int
@@ -985,8 +1175,6 @@ SUBSCRIPTION_PLANS = {
     "enterprise": SubscriptionPlan(name="Enterprise", max_students=10000, max_teachers=1000, storage_mb=50000, modules=["*"], price_monthly=499, price_yearly=4990),
 }
 
-
-# ========== PLATFORM DASHBOARD ==========
 
 class PlatformDashboardRead(BaseModel):
     total_schools: int = 0
@@ -1020,936 +1208,150 @@ class SchoolStatisticsRead(BaseModel):
     status: str = "active"
 
 
-# ========== PERIOD MASTER ==========
+# ========== REPORT CARD ==========
 
-class PeriodMasterCreate(BaseModel):
-    period_name: str
-    period_number: int
-    start_time: str
-    end_time: str
-    is_break: Optional[bool] = False
-    is_assembly: Optional[bool] = False
-    is_sports: Optional[bool] = False
-    is_library: Optional[bool] = False
-    is_practical: Optional[bool] = False
-    sort_order: Optional[int] = 0
+class GradingRuleCreate(BaseModel):
+    grading_scale: str = "10_point"
+    rules_json: str
+    pass_percentage: float = 33.0
+    is_active: bool = True
 
 
-class PeriodMasterRead(BaseModel):
+class GradingRuleRead(BaseModel):
     id: int
-    period_name: str
-    period_number: int
-    start_time: str
-    end_time: str
-    is_break: bool
-    is_assembly: bool
-    is_sports: bool
-    is_library: bool
-    is_practical: bool
-    sort_order: int
-    created_on: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-
-    class Config:
-        orm_mode = True
-
-
-class PeriodMasterUpdate(BaseModel):
-    period_name: Optional[str] = None
-    period_number: Optional[int] = None
-    start_time: Optional[str] = None
-    end_time: Optional[str] = None
-    is_break: Optional[bool] = None
-    is_assembly: Optional[bool] = None
-    is_sports: Optional[bool] = None
-    is_library: Optional[bool] = None
-    is_practical: Optional[bool] = None
-    sort_order: Optional[int] = None
-
-
-# ========== TEACHER AVAILABILITY ==========
-
-class TeacherAvailabilityCreate(BaseModel):
-    teacher_id: int
-    day_of_week: int
-    period_number: int
-    is_available: bool = True
-    availability_type: Optional[str] = "available"
-
-
-class TeacherAvailabilityRead(BaseModel):
-    id: int
-    teacher_id: int
-    day_of_week: int
-    period_number: int
-    is_available: bool
-    availability_type: str
-    created_on: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-
-    class Config:
-        orm_mode = True
-
-
-class TeacherAvailabilityUpdate(BaseModel):
-    is_available: Optional[bool] = None
-    availability_type: Optional[str] = None
-
-
-# ========== TIMETABLE GENERATOR LOG ==========
-
-class TimetableGeneratorLogRead(BaseModel):
-    id: int
-    academic_year_id: int
-    generated_by: Optional[int] = None
-    generation_type: str
-    source_academic_year_id: Optional[int] = None
-    source_section_id: Optional[int] = None
-    config: Optional[str] = None
-    result_summary: Optional[str] = None
-    conflicts_found: int = 0
-    conflicts_resolved: int = 0
-    status: str
-    created_on: Optional[datetime] = None
-
-    class Config:
-        orm_mode = True
-
-
-# ========== TIMETABLE CONFLICT LOG ==========
-
-class TimetableConflictLogRead(BaseModel):
-    id: int
-    conflict_type: str
-    conflict_description: str
-    day_of_week: int
-    period_number: int
-    start_time: Optional[str] = None
-    end_time: Optional[str] = None
-    teacher_id: Optional[int] = None
-    class_id: Optional[int] = None
-    section_id: Optional[int] = None
-    room_id: Optional[int] = None
-    subject_id: Optional[int] = None
-    conflicting_record_id: Optional[int] = None
-    resolved: bool = False
-    created_on: Optional[datetime] = None
-
-    class Config:
-        orm_mode = True
-
-
-# ========== TIMETABLE DASHBOARD ==========
-
-class TimetableDashboardRead(BaseModel):
-    total_classes: int = 0
-    total_teachers: int = 0
-    today_classes: int = 0
-    running_classes: int = 0
-    free_rooms: int = 0
-    occupied_rooms: int = 0
-    teacher_utilization: float = 0.0
-    room_utilization: float = 0.0
-    avg_teaching_hours: float = 0.0
-    upcoming_classes: List[dict] = []
-
-    class Config:
-        orm_mode = True
-
-
-# ========== TIMETABLE GENERATION REQUEST ==========
-
-class TimetableGenerateRequest(BaseModel):
-    academic_year_id: int
-    working_days: List[int] = [0, 1, 2, 3, 4, 5]
-    school_start_time: str = "08:00"
-    school_end_time: str = "15:00"
-    periods_per_day: int = 6
-    break_periods: List[int] = []
-    max_periods_per_day: Optional[int] = None
-    max_periods_per_week: Optional[int] = None
-    auto_assign_teachers: bool = True
-    auto_assign_rooms: bool = True
-    auto_assign_periods: bool = True
-    copy_from_academic_year_id: Optional[int] = None
-    copy_from_section_id: Optional[int] = None
-    copy_to_section_id: Optional[int] = None
-
-
-# ========== TIMETABLE CONFLICT CHECK ==========
-
-class TimetableConflictCheck(BaseModel):
-    day_of_week: int
-    period: int
-    start_time: str
-    end_time: str
-    teacher_id: int
-    class_id: int
-    section_id: Optional[int] = None
-    room_id: Optional[int] = None
-    subject_id: Optional[int] = None
-    exclude_timetable_id: Optional[int] = None
-
-
-class TimetableConflictResult(BaseModel):
-    has_conflict: bool
-    conflicts: List[dict] = []
-    messages: List[str] = []
-    status: Optional[str] = None
-    remarks: Optional[str] = None
-
-
-# ========== PERIOD MASTER ==========
-
-class PeriodMasterCreate(BaseModel):
-    period_name: str
-    period_number: int
-    start_time: str
-    end_time: str
-    is_break: Optional[bool] = False
-    is_assembly: Optional[bool] = False
-    is_sports: Optional[bool] = False
-    is_library: Optional[bool] = False
-    is_practical: Optional[bool] = False
-    sort_order: Optional[int] = 0
-
-
-class PeriodMasterRead(BaseModel):
-    id: int
-    period_name: str
-    period_number: int
-    start_time: str
-    end_time: str
-    is_break: bool
-    is_assembly: bool
-    is_sports: bool
-    is_library: bool
-    is_practical: bool
-    sort_order: int
-    created_on: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-
-    class Config:
-        orm_mode = True
-
-
-class PeriodMasterUpdate(BaseModel):
-    period_name: Optional[str] = None
-    period_number: Optional[int] = None
-    start_time: Optional[str] = None
-    end_time: Optional[str] = None
-    is_break: Optional[bool] = None
-    is_assembly: Optional[bool] = None
-    is_sports: Optional[bool] = None
-    is_library: Optional[bool] = None
-    is_practical: Optional[bool] = None
-    sort_order: Optional[int] = None
-
-
-# ========== TEACHER AVAILABILITY ==========
-
-class TeacherAvailabilityCreate(BaseModel):
-    teacher_id: int
-    day_of_week: int
-    period_number: int
-    is_available: bool = True
-    availability_type: Optional[str] = "available"
-
-
-class TeacherAvailabilityRead(BaseModel):
-    id: int
-    teacher_id: int
-    day_of_week: int
-    period_number: int
-    is_available: bool
-    availability_type: str
-    created_on: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-
-    class Config:
-        orm_mode = True
-
-
-class TeacherAvailabilityUpdate(BaseModel):
-    is_available: Optional[bool] = None
-    availability_type: Optional[str] = None
-
-
-# ========== TIMETABLE GENERATOR LOG ==========
-
-class TimetableGeneratorLogRead(BaseModel):
-    id: int
-    academic_year_id: int
-    generated_by: Optional[int] = None
-    generation_type: str
-    source_academic_year_id: Optional[int] = None
-    source_section_id: Optional[int] = None
-    config: Optional[str] = None
-    result_summary: Optional[str] = None
-    conflicts_found: int = 0
-    conflicts_resolved: int = 0
-    status: str
-    created_on: Optional[datetime] = None
-
-    class Config:
-        orm_mode = True
-
-
-# ========== TIMETABLE CONFLICT LOG ==========
-
-class TimetableConflictLogRead(BaseModel):
-    id: int
-    conflict_type: str
-    conflict_description: str
-    day_of_week: int
-    period_number: int
-    start_time: Optional[str] = None
-    end_time: Optional[str] = None
-    teacher_id: Optional[int] = None
-    class_id: Optional[int] = None
-    section_id: Optional[int] = None
-    room_id: Optional[int] = None
-    subject_id: Optional[int] = None
-    conflicting_record_id: Optional[int] = None
-    resolved: bool = False
-    created_on: Optional[datetime] = None
-
-    class Config:
-        orm_mode = True
-
-
-# ========== TIMETABLE DASHBOARD ==========
-
-class TimetableDashboardRead(BaseModel):
-    total_classes: int = 0
-    total_teachers: int = 0
-    today_classes: int = 0
-    running_classes: int = 0
-    free_rooms: int = 0
-    occupied_rooms: int = 0
-    teacher_utilization: float = 0.0
-    room_utilization: float = 0.0
-    avg_teaching_hours: float = 0.0
-    upcoming_classes: List[dict] = []
-
-    class Config:
-        orm_mode = True
-
-
-# ========== TIMETABLE GENERATION REQUEST ==========
-
-class TimetableGenerateRequest(BaseModel):
-    academic_year_id: int
-    working_days: List[int] = [0, 1, 2, 3, 4, 5]
-    school_start_time: str = "08:00"
-    school_end_time: str = "15:00"
-    periods_per_day: int = 6
-    break_periods: List[int] = []
-    max_periods_per_day: Optional[int] = None
-    max_periods_per_week: Optional[int] = None
-    auto_assign_teachers: bool = True
-    auto_assign_rooms: bool = True
-    auto_assign_periods: bool = True
-    copy_from_academic_year_id: Optional[int] = None
-    copy_from_section_id: Optional[int] = None
-    copy_to_section_id: Optional[int] = None
-
-
-# ========== TIMETABLE CONFLICT CHECK ==========
-
-class TimetableConflictCheck(BaseModel):
-    day_of_week: int
-    period: int
-    start_time: str
-    end_time: str
-    teacher_id: int
-    class_id: int
-    section_id: Optional[int] = None
-    room_id: Optional[int] = None
-    subject_id: Optional[int] = None
-    exclude_timetable_id: Optional[int] = None
-
-
-class TimetableConflictResult(BaseModel):
-    has_conflict: bool
-    conflicts: List[dict] = []
-    messages: List[str] = []
-    status: Optional[str] = None
-    remarks: Optional[str] = None
-
-
-# ========== REPORT CARD TEMPLATES ==========
-
-class ReportCardTemplateCreate(BaseModel):
-    name: str
-    description: Optional[str] = None
-    template_type: Optional[str] = "standard"
-    academic_year_id: Optional[int] = None
-    class_id: Optional[int] = None
-    exam_id: Optional[int] = None
-    is_default: Optional[bool] = False
-    config: Optional[str] = None
-    header_config: Optional[str] = None
-    footer_config: Optional[str] = None
-    body_config: Optional[str] = None
-    css_config: Optional[str] = None
-
-
-class ReportCardTemplateRead(BaseModel):
-    id: int
-    name: str
-    description: Optional[str] = None
-    template_type: str
-    academic_year_id: Optional[int] = None
-    class_id: Optional[int] = None
-    exam_id: Optional[int] = None
-    is_default: bool
-    is_archived: bool
-    version: int
-    parent_template_id: Optional[int] = None
-    config: Optional[str] = None
-    header_config: Optional[str] = None
-    footer_config: Optional[str] = None
-    body_config: Optional[str] = None
-    css_config: Optional[str] = None
-    created_by: Optional[int] = None
-    created_on: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-
-    class Config:
-        orm_mode = True
-
-
-class ReportCardTemplateUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    template_type: Optional[str] = None
-    academic_year_id: Optional[int] = None
-    class_id: Optional[int] = None
-    exam_id: Optional[int] = None
-    is_default: Optional[bool] = None
-    is_archived: Optional[bool] = None
-    config: Optional[str] = None
-    header_config: Optional[str] = None
-    footer_config: Optional[str] = None
-    body_config: Optional[str] = None
-    css_config: Optional[str] = None
-
-
-class ReportCardTemplateVersionRead(BaseModel):
-    id: int
-    template_id: int
-    version: int
-    config: Optional[str] = None
-    header_config: Optional[str] = None
-    footer_config: Optional[str] = None
-    body_config: Optional[str] = None
-    css_config: Optional[str] = None
-    change_description: Optional[str] = None
-    created_by: Optional[int] = None
-    created_on: Optional[datetime] = None
-
-    class Config:
-        orm_mode = True
-
-
-class ReportCardComponentCreate(BaseModel):
-    template_id: int
-    component_type: str
-    label: str
-    x_position: Optional[float] = 0.0
-    y_position: Optional[float] = 0.0
-    width: Optional[float] = 100.0
-    height: Optional[float] = 50.0
-    font_size: Optional[int] = None
-    font_color: Optional[str] = None
-    font_family: Optional[str] = None
-    font_weight: Optional[str] = None
-    border_radius: Optional[int] = None
-    border_width: Optional[int] = None
-    border_color: Optional[str] = None
-    background_color: Optional[str] = None
-    margin_top: Optional[float] = None
-    margin_bottom: Optional[float] = None
-    margin_left: Optional[float] = None
-    margin_right: Optional[float] = None
-    padding: Optional[float] = None
-    is_visible: Optional[bool] = True
-    is_editable: Optional[bool] = True
-    data_source: Optional[str] = None
-    default_value: Optional[str] = None
-    sort_order: Optional[int] = 0
-
-
-class ReportCardComponentRead(BaseModel):
-    id: int
-    template_id: int
-    component_type: str
-    label: str
-    x_position: float
-    y_position: float
-    width: float
-    height: float
-    font_size: Optional[int] = None
-    font_color: Optional[str] = None
-    font_family: Optional[str] = None
-    font_weight: Optional[str] = None
-    border_radius: Optional[int] = None
-    border_width: Optional[int] = None
-    border_color: Optional[str] = None
-    background_color: Optional[str] = None
-    margin_top: Optional[float] = None
-    margin_bottom: Optional[float] = None
-    margin_left: Optional[float] = None
-    margin_right: Optional[float] = None
-    padding: Optional[float] = None
-    is_visible: bool
-    is_editable: bool
-    data_source: Optional[str] = None
-    default_value: Optional[str] = None
-    sort_order: int
-    created_on: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-
-    class Config:
-        orm_mode = True
-
-
-class ReportCardComponentUpdate(BaseModel):
-    x_position: Optional[float] = None
-    y_position: Optional[float] = None
-    width: Optional[float] = None
-    height: Optional[float] = None
-    font_size: Optional[int] = None
-    font_color: Optional[str] = None
-    font_family: Optional[str] = None
-    font_weight: Optional[str] = None
-    border_radius: Optional[int] = None
-    border_width: Optional[int] = None
-    border_color: Optional[str] = None
-    background_color: Optional[str] = None
-    margin_top: Optional[float] = None
-    margin_bottom: Optional[float] = None
-    margin_left: Optional[float] = None
-    margin_right: Optional[float] = None
-    padding: Optional[float] = None
-    is_visible: Optional[bool] = None
-    is_editable: Optional[bool] = None
-    data_source: Optional[str] = None
-    default_value: Optional[str] = None
-    sort_order: Optional[int] = None
-
-
-# ========== EXAMINATION TYPES ==========
-
-class ExaminationTypeCreate(BaseModel):
-    name: str
-    code: Optional[str] = None
-    exam_type: Optional[str] = "theory"
-    weightage: Optional[float] = 0.0
-    max_marks: Optional[float] = None
-    passing_marks: Optional[float] = None
-    duration_minutes: Optional[int] = None
-    show_in_report_card: Optional[bool] = True
-    sort_order: Optional[int] = 0
-
-
-class ExaminationTypeRead(BaseModel):
-    id: int
-    name: str
-    code: Optional[str] = None
-    exam_type: str
-    weightage: float
-    max_marks: Optional[float] = None
-    passing_marks: Optional[float] = None
-    duration_minutes: Optional[int] = None
-    is_active: bool
-    is_published: bool
-    show_in_report_card: bool
-    sort_order: int
-    created_on: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-
-    class Config:
-        orm_mode = True
-
-
-class ExaminationTypeUpdate(BaseModel):
-    name: Optional[str] = None
-    code: Optional[str] = None
-    exam_type: Optional[str] = None
-    weightage: Optional[float] = None
-    max_marks: Optional[float] = None
-    passing_marks: Optional[float] = None
-    duration_minutes: Optional[int] = None
-    is_active: Optional[bool] = None
-    is_published: Optional[bool] = None
-    show_in_report_card: Optional[bool] = None
-    sort_order: Optional[int] = None
-
-
-class ExamWeightageConfigCreate(BaseModel):
-    academic_year_id: int
-    class_id: int
-    exam_type_id: int
-    weightage: float = 0.0
-    max_marks: Optional[float] = None
-    passing_marks: Optional[float] = None
-
-
-class ExamWeightageConfigRead(BaseModel):
-    id: int
-    academic_year_id: int
-    class_id: int
-    exam_type_id: int
-    weightage: float
-    max_marks: Optional[float] = None
-    passing_marks: Optional[float] = None
+    school_id: int
+    grading_scale: str
+    rules_json: str
+    pass_percentage: float
     is_active: bool
     created_on: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     class Config:
         orm_mode = True
 
 
-# ========== GRADE ENGINE ==========
-
-class GradeScaleCreate(BaseModel):
-    name: str
-    scale_type: Optional[str] = "percentage"
-    min_value: Optional[float] = 0.0
-    max_value: Optional[float] = 100.0
-    passing_value: Optional[float] = 40.0
-    is_default: Optional[bool] = False
-
-
-class GradeScaleRead(BaseModel):
-    id: int
-    name: str
-    scale_type: str
-    min_value: float
-    max_value: float
-    passing_value: float
-    is_default: bool
-    is_active: bool
-    created_on: Optional[datetime] = None
-
-    class Config:
-        orm_mode = True
-
-
-class GradeScaleUpdate(BaseModel):
-    name: Optional[str] = None
-    scale_type: Optional[str] = None
-    min_value: Optional[float] = None
-    max_value: Optional[float] = None
-    passing_value: Optional[float] = None
-    is_default: Optional[bool] = None
+class GradingRuleUpdate(BaseModel):
+    grading_scale: Optional[str] = None
+    rules_json: Optional[str] = None
+    pass_percentage: Optional[float] = None
     is_active: Optional[bool] = None
 
 
-class GradeScaleRangeCreate(BaseModel):
-    grade_scale_id: int
-    grade: str
-    grade_point: Optional[float] = None
-    min_mark: float
-    max_mark: float
-    description: Optional[str] = None
-    is_passing: Optional[bool] = True
-    sort_order: Optional[int] = 0
-
-
-class GradeScaleRangeRead(BaseModel):
-    id: int
-    grade_scale_id: int
-    grade: str
-    grade_point: Optional[float] = None
-    min_mark: float
-    max_mark: float
-    description: Optional[str] = None
-    is_passing: bool
-    sort_order: int
-
-    class Config:
-        orm_mode = True
-
-
-class GradeScaleRangeUpdate(BaseModel):
-    grade: Optional[str] = None
-    grade_point: Optional[float] = None
-    min_mark: Optional[float] = None
-    max_mark: Optional[float] = None
-    description: Optional[str] = None
-    is_passing: Optional[bool] = None
-    sort_order: Optional[int] = None
-
-
-# ========== GPA ENGINE ==========
-
-class GpaEngineConfigCreate(BaseModel):
-    name: str
-    scale_type: Optional[str] = "4_point"
-    max_gpa: Optional[float] = 4.0
-    min_gpa: Optional[float] = 0.0
-    grade_point_decimals: Optional[int] = 2
-    credit_based: Optional[bool] = False
-    weighted: Optional[bool] = False
-    formula_config: Optional[str] = None
-
-
-class GpaEngineConfigRead(BaseModel):
-    id: int
-    name: str
-    scale_type: str
-    max_gpa: float
-    min_gpa: float
-    grade_point_decimals: int
-    credit_based: bool
-    weighted: bool
-    formula_config: Optional[str] = None
-    is_active: bool
-    created_on: Optional[datetime] = None
-
-    class Config:
-        orm_mode = True
-
-
-class GpaEngineConfigUpdate(BaseModel):
-    name: Optional[str] = None
-    scale_type: Optional[str] = None
-    max_gpa: Optional[float] = None
-    min_gpa: Optional[float] = None
-    grade_point_decimals: Optional[int] = None
-    credit_based: Optional[bool] = None
-    weighted: Optional[bool] = None
-    formula_config: Optional[str] = None
-    is_active: Optional[bool] = None
-
-
-# ========== GPA GRADE MAPPINGS ==========
-
-class GpaGradeMappingCreate(BaseModel):
-    gpa_engine_id: int
-    grade: str
-    grade_point: float
-    min_percentage: float
-    max_percentage: float
-    description: Optional[str] = None
-    is_passing: Optional[bool] = True
-    sort_order: Optional[int] = 0
-
-
-class GpaGradeMappingRead(BaseModel):
-    id: int
-    gpa_engine_id: int
-    grade: str
-    grade_point: float
-    min_percentage: float
-    max_percentage: float
-    description: Optional[str] = None
-    is_passing: bool
-    sort_order: int
-
-    class Config:
-        orm_mode = True
-
-
-class GpaGradeMappingUpdate(BaseModel):
-    grade: Optional[str] = None
-    grade_point: Optional[float] = None
-    min_percentage: Optional[float] = None
-    max_percentage: Optional[float] = None
-    description: Optional[str] = None
-    is_passing: Optional[bool] = None
-    sort_order: Optional[int] = None
-
-
-# ========== SUBJECT CATEGORIES ==========
-
-class SubjectCategoryCreate(BaseModel):
-    name: str
-    code: Optional[str] = None
-    description: Optional[str] = None
-    color: Optional[str] = None
-    sort_order: Optional[int] = 0
-
-
-class SubjectCategoryRead(BaseModel):
-    id: int
-    name: str
-    code: Optional[str] = None
-    description: Optional[str] = None
-    color: Optional[str] = None
-    is_active: bool
-    sort_order: int
-    created_on: Optional[datetime] = None
-
-    class Config:
-        orm_mode = True
-
-
-class SubjectCategoryUpdate(BaseModel):
-    name: Optional[str] = None
-    code: Optional[str] = None
-    description: Optional[str] = None
-    color: Optional[str] = None
-    is_active: Optional[bool] = None
-    sort_order: Optional[int] = None
-
-
-class SubjectCategoryMappingCreate(BaseModel):
-    subject_id: int
-    category_id: int
-    is_primary: Optional[bool] = True
-
-
-class SubjectCategoryMappingRead(BaseModel):
-    id: int
-    subject_id: int
-    category_id: int
-    is_primary: bool
-    created_on: Optional[datetime] = None
-
-    class Config:
-        orm_mode = True
-
-
-# ========== REPORT CARDS ==========
-
-class ReportCardCreate(BaseModel):
-    academic_year_id: int
-    exam_id: Optional[int] = None
-    template_id: Optional[int] = None
+class ReportCardGenerateRequest(BaseModel):
     student_id: int
-    class_id: int
-    section_id: Optional[int] = None
-    template_config: Optional[str] = None
-    student_data: Optional[str] = None
-    grades_data: Optional[str] = None
-    overall_grade: Optional[str] = None
-    overall_gpa: Optional[float] = None
-    overall_percentage: Optional[float] = None
-    total_marks_obtained: Optional[float] = None
-    total_marks_possible: Optional[float] = None
-    attendance_data: Optional[str] = None
-    remarks: Optional[str] = None
-    teacher_remark: Optional[str] = None
-    principal_remark: Optional[str] = None
-
-
-class ReportCardRead(BaseModel):
-    id: int
+    exam_id: int
     academic_year_id: int
-    exam_id: Optional[int] = None
-    template_id: Optional[int] = None
-    student_id: int
-    class_id: int
-    section_id: Optional[int] = None
-    overall_grade: Optional[str] = None
-    overall_gpa: Optional[float] = None
-    overall_percentage: Optional[float] = None
-    total_marks_obtained: Optional[float] = None
-    total_marks_possible: Optional[float] = None
-    attendance_data: Optional[str] = None
-    remarks: Optional[str] = None
-    teacher_remark: Optional[str] = None
-    principal_remark: Optional[str] = None
-    status: str
-    generated_by: Optional[int] = None
-    generated_on: Optional[datetime] = None
-    published_on: Optional[datetime] = None
-    created_on: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-
-    class Config:
-        orm_mode = True
+    teacher_remarks: Optional[str] = None
+    principal_remarks: Optional[str] = None
 
 
-class ReportCardUpdate(BaseModel):
-    academic_year_id: Optional[int] = None
-    exam_id: Optional[int] = None
-    template_id: Optional[int] = None
-    student_id: Optional[int] = None
-    class_id: Optional[int] = None
-    section_id: Optional[int] = None
-    overall_grade: Optional[str] = None
-    overall_gpa: Optional[float] = None
-    overall_percentage: Optional[float] = None
-    total_marks_obtained: Optional[float] = None
-    total_marks_possible: Optional[float] = None
-    attendance_data: Optional[str] = None
-    remarks: Optional[str] = None
-    teacher_remark: Optional[str] = None
-    principal_remark: Optional[str] = None
-    status: Optional[str] = None
-
-
-class ReportCardSubjectCreate(BaseModel):
-    report_card_id: int
-    subject_id: int
-    examination_type_id: Optional[int] = None
-    marks_obtained: Optional[float] = None
-    marks_max: Optional[float] = None
-    percentage: Optional[float] = None
-    grade: Optional[str] = None
-    grade_point: Optional[float] = None
-    grade_scale_range_id: Optional[int] = None
-    remarks: Optional[str] = None
-    teacher_remark: Optional[str] = None
-    is_passing: Optional[bool] = None
-    credit_hours: Optional[float] = None
-    weightage: Optional[float] = None
+class BulkGenerateRequest(BaseModel):
+    student_ids: List[int]
+    exam_id: int
+    academic_year_id: int
+    teacher_remarks: Optional[str] = None
+    principal_remarks: Optional[str] = None
 
 
 class ReportCardSubjectRead(BaseModel):
     id: int
     report_card_id: int
     subject_id: int
-    examination_type_id: Optional[int] = None
-    marks_obtained: Optional[float] = None
-    marks_max: Optional[float] = None
-    percentage: Optional[float] = None
+    subject_name: Optional[str] = None
+    maximum_marks: float
+    obtained_marks: float
+    percentage: float
     grade: Optional[str] = None
-    grade_point: Optional[float] = None
-    grade_scale_range_id: Optional[int] = None
+    grade_point: float
     remarks: Optional[str] = None
-    teacher_remark: Optional[str] = None
-    is_passing: Optional[bool] = None
-    credit_hours: Optional[float] = None
-    weightage: Optional[float] = None
-    created_on: Optional[datetime] = None
 
     class Config:
         orm_mode = True
 
 
-class ReportCardSubjectUpdate(BaseModel):
-    marks_obtained: Optional[float] = None
-    marks_max: Optional[float] = None
-    percentage: Optional[float] = None
-    grade: Optional[str] = None
-    grade_point: Optional[float] = None
-    grade_scale_range_id: Optional[int] = None
-    remarks: Optional[str] = None
-    teacher_remark: Optional[str] = None
-    is_passing: Optional[bool] = None
-    credit_hours: Optional[float] = None
-    weightage: Optional[float] = None
-
-
-# ========== BULK REPORT CARD GENERATION ==========
-
-class BulkReportCardGenerate(BaseModel):
+class ReportCardRead(BaseModel):
+    id: int
+    school_id: int
+    student_id: int
+    exam_id: int
     academic_year_id: int
-    exam_id: Optional[int] = None
+    total_marks: float
+    obtained_marks: float
+    percentage: float
+    overall_grade: Optional[str] = None
+    gpa: float
+    attendance_percentage: float
+    working_days: int
+    present_days: int
+    teacher_remarks: Optional[str] = None
+    principal_remarks: Optional[str] = None
+    result_status: Optional[str] = None
+    promotion_status: Optional[str] = None
+    rank: Optional[int] = None
+    verification_id: str
+    pdf_path: Optional[str] = None
+    is_regenerated: bool
+    generated_by: Optional[int] = None
+    generated_on: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    subjects: List[ReportCardSubjectRead] = []
+
+    class Config:
+        orm_mode = True
+
+
+class ReportCardPreview(BaseModel):
+    school_name: str
+    school_address: Optional[str] = None
+    school_logo: Optional[str] = None
+    school_phone: Optional[str] = None
+    school_email: Optional[str] = None
+    school_website: Optional[str] = None
+    exam_name: str
+    academic_year_name: str
+    student_name: str
+    admission_no: Optional[str] = None
+    roll_number: Optional[str] = None
+    class_name: str
+    section_name: Optional[str] = None
+    gender: Optional[str] = None
+    dob: Optional[date] = None
+    parent_name: Optional[str] = None
+    contact_number: Optional[str] = None
+    photo_path: Optional[str] = None
+    attendance_percentage: float
+    working_days: int
+    present_days: int
+    subjects: List[ReportCardSubjectRead] = []
+    total_marks: float
+    obtained_marks: float
+    percentage: float
+    overall_grade: Optional[str] = None
+    gpa: float
+    result_status: Optional[str] = None
+    promotion_status: Optional[str] = None
+    rank: Optional[int] = None
+    teacher_remarks: Optional[str] = None
+    principal_remarks: Optional[str] = None
+    verification_id: str
+    generated_on: Optional[datetime] = None
+
+
+class ReportCardFilter(BaseModel):
+    academic_year_id: Optional[int] = None
     class_id: Optional[int] = None
-    template_id: Optional[int] = None
-    student_ids: Optional[List[int]] = None
-    publish: Optional[bool] = False
+    section_id: Optional[int] = None
+    student_id: Optional[int] = None
+    exam_id: Optional[int] = None
+    search: Optional[str] = None
+    skip: int = 0
+    limit: int = 100
 
 
-class BulkReportCardResult(BaseModel):
-    generated: int
+class BulkGenerateProgress(BaseModel):
+    total: int
+    completed: int
     failed: int
-    published: int
+    status: str
     errors: List[str] = []

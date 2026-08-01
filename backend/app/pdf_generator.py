@@ -268,8 +268,9 @@ class ReportCardPDF(FPDF):
             self.set_text_color(100, 100, 100)
             self.cell(35, 5, f"Verify ID: {verification_id}", 0, 1, "C")
 
-    def add_digital_signatures(self, principal_name: Optional[str], signature_path: Optional[str] = None):
-        """Add digital signature area."""
+    def add_digital_signatures(self, principal_name: Optional[str], signature_path: Optional[str] = None,
+                                stamp_path: Optional[str] = None):
+        """Add digital signature area with principal signature and school stamp."""
         self.ln(5)
         y = self.get_y()
 
@@ -290,11 +291,17 @@ class ReportCardPDF(FPDF):
         self.set_font("DejaVu", "B", 8)
         self.cell(50, 5, f"Principal ({principal_name or 'N/A'})", 0, 0, "C")
 
-        # School stamp placeholder
+        # School stamp (render actual image if available)
         self.set_xy(130, y)
         self.set_font("DejaVu", "", 8)
-        self.cell(50, 5, "_________________________", 0, 0, "C")
-        self.set_xy(130, y + 6)
+        if stamp_path and os.path.exists(stamp_path):
+            try:
+                self.image(stamp_path, x=130, y=y, w=30, h=15)
+            except Exception:
+                self.cell(50, 5, "_________________________", 0, 0, "C")
+        else:
+            self.cell(50, 5, "_________________________", 0, 0, "C")
+        self.set_xy(130, y + 8)
         self.set_font("DejaVu", "B", 8)
         self.cell(50, 5, "School Stamp", 0, 0, "C")
 
@@ -406,6 +413,7 @@ class ReportCardPDF(FPDF):
         self.add_digital_signatures(
             principal_name=data.get("principal_name"),
             signature_path=data.get("signature_path"),
+            stamp_path=data.get("stamp_path"),
         )
 
         # Return PDF bytes

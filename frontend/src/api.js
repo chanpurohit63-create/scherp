@@ -208,6 +208,10 @@ export async function updateGradeScale(token, id, data) {
   return updateResource(token, 'grade-scales', id, data)
 }
 
+export async function deleteGradeScale(token, id) {
+  return deleteResource(token, 'grade-scales', id)
+}
+
 export async function listGradeScaleRanges(token, gradeScaleId) {
   return listResources(token, `grade-scales/${gradeScaleId}/ranges`)
 }
@@ -232,6 +236,10 @@ export async function createGpaEngine(token, data) {
 
 export async function updateGpaEngine(token, id, data) {
   return updateResource(token, 'gpa-engines', id, data)
+}
+
+export async function deleteGpaEngine(token, id) {
+  return deleteResource(token, 'gpa-engines', id)
 }
 
 export async function listGpaGradeMappings(token, gpaEngineId) {

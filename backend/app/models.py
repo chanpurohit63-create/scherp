@@ -277,6 +277,10 @@ class SchoolSettings(SQLModel, table=True):
     phone: Optional[str] = None
     email: Optional[str] = None
     logo_path: Optional[str] = None
+    principal_name: Optional[str] = None
+    theme_color: Optional[str] = Field(default="#4f46e5")
+    stamp_path: Optional[str] = None
+    signature_path: Optional[str] = None
     academic_year_id: Optional[int] = Field(default=None, foreign_key="academicyear.id")
 
 

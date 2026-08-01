@@ -106,6 +106,8 @@ import NotificationSettingsPage from './pages/NotificationSettings'
 import { NotificationProvider } from './components/NotificationProvider'
 import { WebSocketProvider } from './components/WebSocketProvider'
 import ConfirmDialog from './components/ConfirmDialog'
+import { ThemeProvider } from './contexts/ThemeContext'
+import ThemeToggle from './components/ThemeToggle'
 import './styles.css'
 
 // Initialize theme from localStorage
@@ -113,6 +115,10 @@ const initTheme = () => {
   const saved = localStorage.getItem('theme')
   if (saved) {
     document.documentElement.setAttribute('data-theme', saved)
+  }
+  const themeColor = localStorage.getItem('theme-color')
+  if (themeColor) {
+    document.documentElement.style.setProperty('--primary-color', themeColor)
   }
 }
 initTheme()
@@ -281,9 +287,11 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <NotificationProvider>
-          <AppContent />
-        </NotificationProvider>
+        <ThemeProvider>
+          <NotificationProvider>
+            <AppContent />
+          </NotificationProvider>
+        </ThemeProvider>
       </BrowserRouter>
     </AuthProvider>
   )
