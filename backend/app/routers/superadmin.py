@@ -460,12 +460,14 @@ def reset_school_admin_password(
         admin_user.hashed_password = hashed
         session.add(admin_user)
         session.commit()
+        session.refresh(admin_user)
+        admin_user_id = admin_user.id
     log_audit(
         user_id=current_user.id,
         school_id=school_id,
         action="password.reset",
         resource="user",
-        resource_id=admin_user.id,
+        resource_id=admin_user_id,
         details=f"Reset password for school admin of {school.school_name}",
         ip_address=get_client_ip(request),
     )

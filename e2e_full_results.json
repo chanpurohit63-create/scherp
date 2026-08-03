@@ -1,0 +1,12 @@
+[
+  {
+    "step": "2.1",
+    "name": "School Admin login",
+    "expected": "Token returned",
+    "actual": "Token FAILED",
+    "ok": false,
+    "error": "Login failed",
+    "root_cause": null,
+    "fix": null
+  }
+]

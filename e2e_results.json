@@ -1,0 +1,112 @@
+[
+  {
+    "step": "1.1",
+    "name": "Super Admin login",
+    "expected": "Token returned",
+    "actual": "Token returned",
+    "ok": true,
+    "error": null,
+    "root_cause": null,
+    "fix": null
+  },
+  {
+    "step": "1.2",
+    "name": "Super Admin dashboard loads",
+    "expected": "200 + dashboard data",
+    "actual": "200",
+    "ok": true,
+    "error": null,
+    "root_cause": null,
+    "fix": null
+  },
+  {
+    "step": "1.3",
+    "name": "Create new school",
+    "expected": "201 + school id",
+    "actual": "201 id=2",
+    "ok": 2,
+    "error": null,
+    "root_cause": null,
+    "fix": null
+  },
+  {
+    "step": "1.4",
+    "name": "School appears in list",
+    "expected": "School in list",
+    "actual": "in_list=True",
+    "ok": true,
+    "error": null,
+    "root_cause": null,
+    "fix": null
+  },
+  {
+    "step": "1.5",
+    "name": "Edit school",
+    "expected": "200 + updated name",
+    "actual": "200 name=Test School Alpha (Updated)",
+    "ok": true,
+    "error": null,
+    "root_cause": null,
+    "fix": null
+  },
+  {
+    "step": "1.6",
+    "name": "Search school",
+    "expected": "Matching school returned",
+    "actual": "search results=1",
+    "ok": true,
+    "error": null,
+    "root_cause": null,
+    "fix": null
+  },
+  {
+    "step": "1.7",
+    "name": "Filter schools by status=active",
+    "expected": "All schools active",
+    "actual": "status=200 count=2",
+    "ok": true,
+    "error": null,
+    "root_cause": null,
+    "fix": null
+  },
+  {
+    "step": "1.8",
+    "name": "Suspend school",
+    "expected": "200 + status=suspended",
+    "actual": "200 status=suspended",
+    "ok": true,
+    "error": null,
+    "root_cause": null,
+    "fix": null
+  },
+  {
+    "step": "1.9",
+    "name": "Activate school",
+    "expected": "200 + status=active",
+    "actual": "200 status=active",
+    "ok": true,
+    "error": null,
+    "root_cause": null,
+    "fix": null
+  },
+  {
+    "step": "1.10",
+    "name": "School Admin credentials generated",
+    "expected": "200 + admin user id",
+    "actual": "200 admin_id=3",
+    "ok": 3,
+    "error": null,
+    "root_cause": null,
+    "fix": null
+  },
+  {
+    "step": "1.11",
+    "name": "School Admin can login with generated credentials",
+    "expected": "Token returned",
+    "actual": "Token returned",
+    "ok": true,
+    "error": null,
+    "root_cause": null,
+    "fix": null
+  }
+]

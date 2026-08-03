@@ -2,7 +2,14 @@ import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.jsx'
 import { BACKEND_URL } from '../api'
-import debounce from 'lodash.debounce'
+
+function debounce(fn, wait) {
+  let timeout
+  return function(...args) {
+    clearTimeout(timeout)
+    timeout = setTimeout(() => fn.apply(this, args), wait)
+  }
+}
 
 export default function GlobalSearch() {
   const auth = useAuth()

@@ -1,4 +1,5 @@
 from typing import List, Optional
+import io
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from fastapi.responses import StreamingResponse, JSONResponse
 
@@ -52,6 +53,9 @@ from ..report_card_service import (
     list_report_card_subjects,
     update_report_card_subject,
     calculate_overall_grade,
+    delete_report_card,
+    get_report_card_by_verification_id,
+    get_report_card_stats,
 )
 
 router = APIRouter()
@@ -436,4 +440,52 @@ def export_report_card_pdf(report_card_id: int, current_user=Depends(auth.requir
         iter([pdf_bytes]),
         media_type="application/pdf",
         headers={"Content-Disposition": f'attachment; filename="report_card_{report_card_id}.pdf"'},
+    )
+
+
+@router.delete("/report-cards/{report_card_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_report_card_endpoint(report_card_id: int, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
+    success = delete_report_card(report_card_id, current_user)
+    if not success:
+        raise HTTPException(status_code=404, detail="Report card not found")
+    return {}
+
+
+@router.get("/report-cards/verify/{verification_id}")
+def verify_report_card_endpoint(verification_id: str, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
+    report_card = get_report_card_by_verification_id(verification_id)
+    if not report_card:
+        raise HTTPException(status_code=404, detail="Report card not found")
+    return {"valid": True, "report_card_id": report_card.id, "status": report_card.status}
+
+
+@router.get("/report-cards/stats/summary")
+def report_card_stats_endpoint(current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
+    return get_report_card_stats()
+
+
+@router.get("/report-cards/bulk/download")
+def bulk_download_report_cards_pdf(
+    report_card_ids: str = Query(..., description="Comma-separated list of report card IDs"),
+    current_user=Depends(auth.require_roles(*ADMIN_ROLES)),
+):
+    ids = [int(x) for x in report_card_ids.split(",") if x.strip().isdigit()]
+    import os
+    import zipfile
+    from fastapi.responses import StreamingResponse as FR
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for rid in ids:
+            report_card = get_report_card(rid)
+            if not report_card:
+                continue
+            grades = list_report_card_subjects(rid)
+            from ..report_card_export import generate_report_card_pdf
+            pdf_bytes = generate_report_card_pdf(report_card, grades)
+            zipf.writestr(f"report_card_{rid}.pdf", pdf_bytes)
+    zip_buffer.seek(0)
+    return StreamingResponse(
+        iter([zip_buffer.read()]),
+        media_type="application/zip",
+        headers={"Content-Disposition": "attachment; filename=\"report_cards.zip\""},
     )

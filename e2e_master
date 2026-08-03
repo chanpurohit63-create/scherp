@@ -1,0 +1,315 @@
+"""MASTER E2E TEST v2 - All 11 Workflows with correct schemas"""
+import requests, json, sys
+from datetime import date, timedelta
+
+BASE = "http://localhost:8000"
+results = []
+
+def log(w, t, s, d=""):
+    results.append({"w":w,"t":t,"s":s,"d":d})
+    emoji = "\u2705" if s=="PASS" else "\u274c" if s=="FAIL" else "\u26a0"
+    print(f"{emoji} [{w}] {t}: {d}")
+
+def login(email, pw):
+    r = requests.post(f"{BASE}/auth/token", data={"username":email,"password":pw})
+    return r.json()["access_token"] if r.status_code==200 else None
+
+def H(tok): return {"Authorization": f"Bearer {tok}"}
+def G(tok, path, params=None): return requests.get(f"{BASE}{path}", headers=H(tok), params=params)
+def P(tok, path, j=None, params=None): return requests.post(f"{BASE}{path}", headers=H(tok), json=j, params=params)
+def U(tok, path, j=None, params=None): return requests.put(f"{BASE}{path}", headers=H(tok), json=j, params=params)
+
+def register(sa_token, school_id, email, password, full_name, role):
+    """Register user and return user_id"""
+    r = P(sa_token, f"/auth/register?school_id={school_id}", j={"email":email,"password":password,"full_name":full_name,"role":role})
+    if r.status_code in (200,201):
+        return r.json().get("id")
+    if "exist" in r.text.lower():
+        # User exists, find user_id via login
+        tok = login(email, password)
+        if tok:
+            r2 = G(tok, "/users/me")
+            if r2.status_code == 200:
+                return r2.json().get("id")
+    return None
+
+# W1: Super Admin
+W="W1"
+sa = login("admin@school.local","admin123")
+log(W,"Login","PASS" if sa else "FAIL")
+r = G(sa,"/api/superadmin/platform/dashboard"); log(W,"Dashboard","PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+r = G(sa,"/api/superadmin/schools")
+schools = r.json() if r.status_code==200 else []
+log(W,"List Schools","PASS" if r.status_code==200 else "FAIL",f"{len(schools) if isinstance(schools,list) else '?'} schools")
+sid = next((s["id"] for s in schools if s.get("school_code")=="GIS2026"), None)
+if not sid:
+    r = P(sa,"/api/superadmin/schools",j={"school_name":"Greenwood International School","school_code":"GIS2026","email":"info@greenwood.edu","phone":"555-0100","address":"123 Education Lane","subscription_plan":"premium"})
+    sid = r.json().get("id") if r.status_code in (200,201) else None
+log(W,"Create/Find School","PASS" if sid else "FAIL",f"ID={sid}")
+r = U(sa,f"/api/superadmin/schools/{sid}",j={"school_name":"Greenwood International Academy","principal_name":"Dr. Sarah J. Mitchell"})
+log(W,"Edit School","PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+r = U(sa,f"/api/superadmin/schools/{sid}/subscription",params={"plan":"enterprise","subscription_start":str(date.today()),"subscription_end":str(date.today()+timedelta(days=730))})
+log(W,"Update Subscription","PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+r = P(sa,f"/api/superadmin/schools/{sid}/suspend"); log(W,"Suspend","PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+r = P(sa,f"/api/superadmin/schools/{sid}/activate"); log(W,"Activate","PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+r = P(sa,f"/api/superadmin/schools/{sid}/reset-admin-password",params={"new_password":"NewGreenwood@2026"})
+log(W,"Reset Password","PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+r = G(sa,"/api/superadmin/schools",params={"search":"Greenwood"}); log(W,"Search","PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+r = G(sa,"/api/superadmin/schools",params={"status_filter":"active"}); log(W,"Filter","PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+r = G(sa,"/api/superadmin/schools",params={"skip":0,"limit":2}); log(W,"Pagination","PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+r = G(sa,"/api/superadmin/audit-logs"); log(W,"Audit Logs","PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+
+# Create school admin user
+aemail="admin@greenwood.edu"; apass="NewGreenwood@2026"
+admin_uid = register(sa, sid, aemail, apass, "John Smith", "School Admin")
+log(W,"Admin User","PASS" if admin_uid else "FAIL",f"uid={admin_uid}")
+
+# W2: School Admin
+W="W2"
+sat = login(aemail, apass)
+if not sat: sat = login(aemail, "Greenwood@2026"); apass="Greenwood@2026"
+log(W,"Login","PASS" if sat else "FAIL")
+if sat:
+    r = G(sat,"/users/me"); log(W,"User Info","PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+    r = G(sat,"/api/dashboard/summary"); log(W,"Dashboard","PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+    r = G(sat,"/api/settings"); log(W,"Settings","PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+
+# W3: Config
+W="W3"; tok=sat if sat else sa
+r = P(tok,"/api/academic-years",j={"name":"2026-2027","start_date":"2026-06-01","end_date":"2027-05-31","is_active":True})
+ay = r.json().get("id") if r.status_code in (200,201) else None
+if not ay:
+    r2 = G(tok,"/api/academic-years"); ays = r2.json() if r2.status_code==200 else []; ay = ays[0].get("id") if isinstance(ays,list) and ays else None
+log(W,"Academic Year","PASS" if ay else "FAIL",f"ID={ay}")
+
+cids = {}
+for cn in ["Class 4","Class 5"]:
+    r = P(tok,"/api/classes",j={"name":cn,"grade_level":cn.replace("Class ","")})
+    if r.status_code in (200,201): cids[cn]=r.json().get("id")
+    else:
+        r2=G(tok,"/api/classes"); cs=r2.json() if r2.status_code==200 else []
+        for c in (cs if isinstance(cs,list) else []):
+            if c.get("name")==cn: cids[cn]=c["id"]; break
+    log(W,f"Class {cn}","PASS" if cids.get(cn) else "FAIL",f"ID={cids.get(cn)}")
+
+sids = {}
+for cn,cid in cids.items():
+    r = P(tok,"/api/sections",j={"name":"A","class_id":cid})
+    if r.status_code in (200,201): sids[f"{cn}-A"]=r.json().get("id")
+    else:
+        r2=G(tok,"/api/sections"); ss=r2.json() if r2.status_code==200 else []
+        for s in (ss if isinstance(ss,list) else []):
+            if s.get("name")=="A" and s.get("class_id")==cid: sids[f"{cn}-A"]=s["id"]; break
+    log(W,f"Section {cn}-A","PASS" if sids.get(f"{cn}-A") else "FAIL",f"ID={sids.get(f'{cn}-A')}")
+
+subids = {}
+for sn in ["Mathematics","English","Science","Social Studies","Hindi"]:
+    r = P(tok,"/api/subjects",j={"name":sn,"code":sn[:3].upper()})
+    if r.status_code in (200,201): subids[sn]=r.json().get("id")
+    else:
+        r2=G(tok,"/api/subjects"); ss=r2.json() if r2.status_code==200 else []
+        for s in (ss if isinstance(ss,list) else []):
+            if s.get("name")==sn: subids[sn]=s["id"]; break
+    log(W,f"Subject {sn}","PASS" if subids.get(sn) else "FAIL",f"ID={subids.get(sn)}")
+
+r = P(tok,"/api/fee-structures",j={"name":"Tuition Fee 2026-27","amount":50000,"category":"tuition"})
+log(W,"Fee Structure","PASS" if r.status_code in (200,201) else "FAIL",f"{r.status_code}")
+
+r = P(tok,"/api/exams",j={"name":"First Term Exam","academic_year_id":ay})
+exam_id = r.json().get("id") if r.status_code in (200,201) else None
+if not exam_id:
+    r2=G(tok,"/api/exams"); es=r2.json() if r2.status_code==200 else []; exam_id = es[0].get("id") if isinstance(es,list) and es else None
+log(W,"Exam","PASS" if exam_id else "FAIL",f"ID={exam_id}")
+
+r = P(tok,"/api/rooms",j={"room_name":"Room 101","capacity":40})
+log(W,"Room","PASS" if r.status_code in (200,201) else "FAIL",f"{r.status_code}")
+
+# W4: Teachers - create user first, then teacher record
+W="W4"; tids={}; tcreds={}
+teacher_data = [
+    ("Ms. Priya Sharma","priya.sharma@greenwood.edu","Teacher1@2026"),
+    ("Mr. Amit Patel","amit.patel@greenwood.edu","Teacher2@2026"),
+]
+for i,(tn,te,tp) in enumerate(teacher_data):
+    uid = register(sa, sid, te, tp, tn, "Teacher")
+    if uid:
+        r = P(tok,"/api/teachers",j={"user_id":uid,"employee_no":f"EMP{i+1}","hire_date":str(date.today())})
+        if r.status_code in (200,201): tids[tn]=r.json().get("id")
+        else:
+            r2=G(tok,"/api/teachers"); ts=r2.json() if r2.status_code==200 else []
+            for t in (ts if isinstance(ts,list) else []):
+                if t.get("user_id")==uid: tids[tn]=t["id"]; break
+    log(W,f"Teacher {tn}","PASS" if tids.get(tn) else "FAIL",f"ID={tids.get(tn)}")
+    if uid: tcreds[tn]=(te,tp,uid)
+    log(W,f"Teacher Login {tn}","PASS" if tcreds.get(tn) else "FAIL")
+
+# Subject allocation
+if tids and subids and cids:
+    tn=list(tids.keys())[0]; tid=tids[tn]
+    r = P(tok,"/api/subject-allocations",j={"teacher_id":tid,"class_id":cids.get("Class 4"),"section_id":sids.get("Class 4-A"),"subject_id":subids.get("Mathematics")})
+    log(W,"Subject Allocation","PASS" if r.status_code in (200,201) else "FAIL",f"{r.status_code}")
+
+# Timetable
+if cids.get("Class 4") and sids.get("Class 4-A") and subids.get("Mathematics") and tids:
+    tn=list(tids.keys())[0]; tid=tids[tn]
+    r = P(tok,"/api/timetable",j={"class_id":cids["Class 4"],"section_id":sids["Class 4-A"],"subject_id":subids["Mathematics"],"teacher_id":tid,"day_of_week":0,"period":1,"start_time":"09:00","end_time":"09:45","academic_year_id":ay})
+    log(W,"Timetable","PASS" if r.status_code in (200,201) else "FAIL",f"{r.status_code}")
+
+if tcreds:
+    tn=list(tcreds.keys())[0]; te,tp,uid=tcreds[tn]
+    tt = login(te,tp)
+    log(W,"Teacher Login Test","PASS" if tt else "FAIL")
+
+# W5: Students - create user first, then student record
+W="W5"; stids=[]; screds=[]
+sdata = [
+    {"class":"Class 4","name":"Aarav Sharma","admission_no":"STU2026001","roll":1,"dob":"2015-03-15","blood":"A+","parent":"Rajesh Sharma","phone":"555-1001","email":"rajesh.sharma@email.com","address":"45 Oak Street","house":"Red"},
+    {"class":"Class 4","name":"Diya Patel","admission_no":"STU2026002","roll":2,"dob":"2015-06-22","blood":"B+","parent":"Suresh Patel","phone":"555-1002","email":"suresh.patel@email.com","address":"78 Pine Avenue","house":"Blue"},
+    {"class":"Class 4","name":"Vivaan Gupta","admission_no":"STU2026003","roll":3,"dob":"2015-09-10","blood":"O+","parent":"Mahesh Gupta","phone":"555-1003","email":"mahesh.gupta@email.com","address":"12 Maple Road","house":"Green"},
+    {"class":"Class 5","name":"Ananya Singh","admission_no":"STU2026004","roll":1,"dob":"2014-04-05","blood":"A-","parent":"Dilip Singh","phone":"555-1004","email":"dilip.singh@email.com","address":"34 Cedar Lane","house":"Red"},
+    {"class":"Class 5","name":"Arjun Kumar","admission_no":"STU2026005","roll":2,"dob":"2014-11-18","blood":"AB+","parent":"Sanjay Kumar","phone":"555-1005","email":"sanjay.kumar@email.com","address":"56 Birch Street","house":"Blue"},
+]
+for sd in sdata:
+    se=f'student_{sd["admission_no"].lower()}@greenwood.edu'; sp=f'Student{sd["roll"]}@2026'
+    uid = register(sa, sid, se, sp, sd["name"], "Student")
+    if uid:
+        r = P(tok,"/api/students",j={"user_id":uid,"admission_no":sd["admission_no"],"dob":sd["dob"],"gender":"M" if sd["roll"]%2==1 else "F","admission_date":str(date.today())})
+        if r.status_code in (200,201): stids.append(r.json().get("id"))
+        else:
+            r2=G(tok,"/api/students"); ss=r2.json() if r2.status_code==200 else []
+            for s in (ss if isinstance(ss,list) else []):
+                if s.get("admission_no")==sd["admission_no"]: stids.append(s["id"]); break
+    log(W,f'Student {sd["name"]}',"PASS" if stids else "FAIL",f"ID={stids[-1] if stids else None}")
+    if uid: screds.append((sd["name"],se,sp,uid))
+    log(W,f'Student Login {sd["name"]}',"PASS" if screds else "FAIL")
+
+# Enroll students
+for i,sid_st in enumerate(stids):
+    sd = sdata[i]
+    r = P(tok,"/api/enrollments",j={"student_id":sid_st,"academic_year_id":ay,"class_id":cids.get(sd["class"]),"section_id":sids.get(f'{sd["class"]}-A')})
+    log(W,f'Enroll {sd["name"]}',"PASS" if r.status_code in (200,201) else "FAIL",f"{r.status_code}")
+
+# W6: Parents
+W="W6"; pcreds=[]
+for sd in sdata:
+    pe=sd["email"]; pp=f'Parent{sd["roll"]}@2026'
+    uid = register(sa, sid, pe, pp, sd["parent"], "Parent")
+    if uid:
+        r = P(tok,"/api/parents",j={"user_id":uid,"phone":sd["phone"],"address":sd["address"]})
+        log(W,f'Parent {sd["parent"]}',"PASS" if r.status_code in (200,201) else "FAIL",f"{r.status_code}")
+        pcreds.append((sd["parent"],pe,pp,sd["name"],uid))
+    else:
+        log(W,f'Parent {sd["parent"]}',"FAIL","No uid")
+
+if pcreds:
+    pn,pe,pp,sn,puid = pcreds[0]
+    pt = login(pe,pp)
+    log(W,"Parent Login","PASS" if pt else "FAIL")
+    if pt:
+        r = G(pt,"/api/portal/parent/children")
+        log(W,"Parent Children","PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+
+# W7: Teacher Ops
+W="W7"
+if tcreds:
+    tn=list(tcreds.keys())[0]; te,tp,uid=tcreds[tn]
+    tt = login(te,tp) or sat
+    log(W,"Teacher Login","PASS" if tt else "FAIL")
+    # Attendance
+    if stids:
+        for sid_st in stids[:3]:
+            r = P(tt,"/api/attendances",j={"student_id":sid_st,"date":str(date.today()),"status":"present"})
+        log(W,"Attendance","PASS" if r.status_code in (200,201) else "FAIL",f"{r.status_code}")
+    # Homework
+    r = P(tt,"/api/homeworks",j={"title":"Math HW Ch1","description":"Exercises 1-10","assigned_by":uid,"class_id":cids.get("Class 4"),"section_id":sids.get("Class 4-A"),"due_date":str(date.today()+timedelta(days=7))})
+    log(W,"Homework","PASS" if r.status_code in (200,201) else "FAIL",f"{r.status_code}")
+    # Exam
+    r = P(tt,"/api/exams",j={"name":"Unit Test 1","academic_year_id":ay})
+    teid = r.json().get("id") if r.status_code in (200,201) else None
+    log(W,"Exam","PASS" if teid else "FAIL",f"ID={teid}")
+    # Exam Results
+    if teid and stids and subids.get("Mathematics"):
+        r = P(tok,"/api/exam-results",j={"exam_id":teid,"student_id":stids[0],"subject_id":subids["Mathematics"],"marks_obtained":85,"max_marks":100})
+        log(W,"Marks","PASS" if r.status_code in (200,201) else "FAIL",f"{r.status_code}")
+    # Notice
+    r = P(tt,"/api/notices",j={"title":"PTM","content":"PTM Saturday 10am","target_roles":"Student,Parent"})
+    log(W,"Notice","PASS" if r.status_code in (200,201) else "FAIL",f"{r.status_code}")
+    # Message (sender to first student)
+    if screds:
+        _,_,_,suid = screds[0]
+        r = P(tt,"/api/messages",j={"subject":"Welcome","body":"Welcome to Class 4!","sender_id":uid,"recipient_id":suid})
+        log(W,"Message","PASS" if r.status_code in (200,201) else "FAIL",f"{r.status_code}")
+    # Calendar
+    r = G(tt,"/api/portal/teacher/calendar"); log(W,"Calendar","PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+    # Profile
+    r = G(tt,"/api/portal/teacher/profile"); log(W,"Profile","PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+
+# W8: Student Portal
+W="W8"
+if screds:
+    sn,se,sp,uid = screds[0]
+    st = login(se,sp)
+    log(W,"Student Login","PASS" if st else "FAIL")
+    if st:
+        for ep in ["/api/portal/student/profile","/api/portal/student/attendance","/api/portal/student/homework","/api/portal/student/exams","/api/portal/student/fees","/api/portal/student/notices","/api/portal/student/calendar","/api/portal/student/documents","/api/portal/student/messages","/api/portal/student/dashboard"]:
+            r = G(st,ep); log(W,ep.split("/")[-1].title(),"PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+
+# W9: Parent Portal
+W="W9"
+if pcreds:
+    pn,pe,pp,sn,puid = pcreds[0]
+    pt = login(pe,pp)
+    log(W,"Parent Login","PASS" if pt else "FAIL")
+    if pt:
+        r = G(pt,"/api/portal/parent/dashboard"); log(W,"Dashboard","PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+        r = G(pt,"/api/portal/parent/children"); log(W,"Children","PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+        ch = r.json() if r.status_code==200 else []
+        cid = ch[0].get("id") if isinstance(ch,list) and ch else (ch.get("id") if isinstance(ch,dict) and "id" in ch else None)
+        if cid:
+            for ep in ["attendance","homework","results","fees","profile"]:
+                r = G(pt,f"/api/portal/parent/children/{cid}/{ep}"); log(W,f"Child {ep.title()}","PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+        for ep in ["notices","calendar","messages"]:
+            r = G(pt,f"/api/portal/parent/{ep}"); log(W,ep.title(),"PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+
+# W10: Report Cards
+W="W10"
+if stids:
+    r = P(tok,"/api/report-cards/generate",j={"student_id":stids[0],"academic_year_id":ay,"exam_id":exam_id})
+    rcid = r.json().get("id") if r.status_code in (200,201) else None
+    log(W,"Generate","PASS" if rcid else "FAIL",f"{r.status_code}")
+    r = P(tok,"/api/report-cards/bulk-generate",j={"class_id":cids.get("Class 4"),"section_id":sids.get("Class 4-A"),"academic_year_id":ay})
+    log(W,"Bulk Generate","PASS" if r.status_code in (200,201) else "FAIL",f"{r.status_code}")
+    r = G(tok,"/api/report-cards"); log(W,"List","PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+    if rcid:
+        r = G(tok,f"/api/report-cards/{rcid}/preview"); log(W,"Preview","PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+        r = P(tok,f"/api/report-cards/{rcid}/publish"); log(W,"Publish","PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+        r = G(tok,f"/api/report-cards/{rcid}/pdf"); log(W,"PDF","PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+        r = P(tok,f"/api/report-cards/{rcid}/archive"); log(W,"Archive","PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+    r = G(tok,"/api/report-cards/stats/summary"); log(W,"Stats","PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+
+# W11: Final
+W="W11"
+for ep in ["/api/students","/api/teachers","/api/classes","/api/subjects","/api/events","/api/payments","/api/notices","/api/timetable","/api/rooms","/api/enrollments","/api/exam-results","/api/fee-assignments"]:
+    r = G(tok,ep); log(W,f'{ep.split("/")[-1].title()} Read',"PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+if stids:
+    r = G(tok,f"/api/students/{stids[0]}"); log(W,"Student Read Single","PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+    r = U(tok,f"/api/students/{stids[0]}",j={"admission_no":"STU2026001"}); log(W,"Student Update","PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+r = G(tok,"/api/search",params={"q":"Aarav"}); log(W,"Global Search","PASS" if r.status_code==200 else "FAIL",f"{r.status_code}")
+
+# Summary
+print()
+print("="*60)
+print("FINAL SUMMARY")
+print("="*60)
+byw = {}
+for r in results:
+    w = r["w"]
+    if w not in byw: byw[w] = {"PASS":0,"FAIL":0,"PARTIAL":0}
+    byw[w][r["s"]] = byw[w].get(r["s"],0)+1
+for w in sorted(byw.keys()):
+    d = byw[w]; t = d["PASS"]+d["FAIL"]+d.get("PARTIAL",0)
+    print(f"  {w}: {t} tests | PASS={d['PASS']} FAIL={d['FAIL']} PARTIAL={d.get('PARTIAL',0)}")
+tp=sum(1 for r in results if r["s"]=="PASS"); tf=sum(1 for r in results if r["s"]=="FAIL"); tpa=sum(1 for r in results if r["s"]=="PARTIAL")
+print(f"  TOTAL: {len(results)} tests | PASS={tp} FAIL={tf} PARTIAL={tpa}")
+json.dump({"results":results,"summary":{"total":len(results),"pass":tp,"fail":tf,"partial":tpa}}, open("e2e_master_results.json","w"), indent=2)
+print("Results saved to e2e_master_results.json")

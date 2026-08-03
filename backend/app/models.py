@@ -454,6 +454,21 @@ class NotificationAuditLog(SQLModel, table=True):
     created_on: datetime = Field(default_factory=datetime.utcnow)
 
 
+class AuditLog(SQLModel, table=True):
+    __tablename__ = "auditlog"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: Optional[int] = Field(default=None, foreign_key="user.id", index=True)
+    school_id: Optional[int] = Field(default=None, foreign_key="school.id", index=True)
+    action: str = Field(index=True)
+    resource: Optional[str] = None
+    resource_id: Optional[int] = None
+    details: Optional[str] = None
+    before_values: Optional[str] = None
+    after_values: Optional[str] = None
+    ip_address: Optional[str] = None
+    created_on: datetime = Field(default_factory=datetime.utcnow)
+
+
 class GradingRule(SQLModel, table=True):
     """Configurable grading rules per school."""
     __tablename__ = "grading_rule"
@@ -473,7 +488,9 @@ class ReportCard(SQLModel, table=True):
     school_id: int = Field(foreign_key="school.id", index=True)
     student_id: int = Field(foreign_key="student.id", index=True)
     exam_id: int = Field(foreign_key="exam.id", index=True)
+    class_id: Optional[int] = Field(default=None, foreign_key="schoolclass.id", index=True)
     academic_year_id: int = Field(foreign_key="academicyear.id", index=True)
+    template_id: Optional[int] = Field(default=None, foreign_key="report_card_template.id")
     total_marks: float = Field(default=0.0)
     obtained_marks: float = Field(default=0.0)
     percentage: float = Field(default=0.0)
@@ -490,8 +507,11 @@ class ReportCard(SQLModel, table=True):
     verification_id: str = Field(unique=True, index=True)
     pdf_path: Optional[str] = None
     is_regenerated: bool = False
+    status: str = Field(default="draft")  # draft, generated, published, archived
     generated_by: Optional[int] = Field(default=None, foreign_key="user.id")
     generated_on: datetime = Field(default_factory=datetime.utcnow)
+    published_on: Optional[datetime] = None
+    created_on: datetime = Field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = Field(default=None, sa_column_kwargs={"onupdate": datetime.utcnow})
 
 

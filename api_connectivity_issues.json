@@ -1,0 +1,1141 @@
+{
+  "missing_backend": [
+    {
+      "path": "report-card/templates",
+      "file": "api.js",
+      "line": 140
+    },
+    {
+      "path": "report-card/templates",
+      "file": "api.js",
+      "line": 144
+    },
+    {
+      "path": "report-card/templates",
+      "file": "api.js",
+      "line": 148
+    },
+    {
+      "path": "report-card/templates/${id}/archive",
+      "file": "api.js",
+      "line": 152
+    },
+    {
+      "path": "report-card/templates/${id}/duplicate",
+      "file": "api.js",
+      "line": 156
+    },
+    {
+      "path": "report-card/components/template/${templateId}",
+      "file": "api.js",
+      "line": 162
+    },
+    {
+      "path": "report-card/components",
+      "file": "api.js",
+      "line": 166
+    },
+    {
+      "path": "report-card/components",
+      "file": "api.js",
+      "line": 170
+    },
+    {
+      "path": "report-card/components",
+      "file": "api.js",
+      "line": 174
+    },
+    {
+      "path": "examination-types",
+      "file": "api.js",
+      "line": 180
+    },
+    {
+      "path": "examination-types",
+      "file": "api.js",
+      "line": 184
+    },
+    {
+      "path": "examination-types",
+      "file": "api.js",
+      "line": 188
+    },
+    {
+      "path": "examination-types",
+      "file": "api.js",
+      "line": 192
+    },
+    {
+      "path": "exam-weightage",
+      "file": "api.js",
+      "line": 207
+    },
+    {
+      "path": "grade-scales",
+      "file": "api.js",
+      "line": 213
+    },
+    {
+      "path": "grade-scales",
+      "file": "api.js",
+      "line": 217
+    },
+    {
+      "path": "grade-scales",
+      "file": "api.js",
+      "line": 221
+    },
+    {
+      "path": "grade-scales",
+      "file": "api.js",
+      "line": 225
+    },
+    {
+      "path": "grade-scales/${gradeScaleId}/ranges",
+      "file": "api.js",
+      "line": 229
+    },
+    {
+      "path": "grade-scales/${gradeScaleId}/ranges",
+      "file": "api.js",
+      "line": 233
+    },
+    {
+      "path": "grade-scale-ranges",
+      "file": "api.js",
+      "line": 237
+    },
+    {
+      "path": "gpa-engines",
+      "file": "api.js",
+      "line": 243
+    },
+    {
+      "path": "gpa-engines",
+      "file": "api.js",
+      "line": 247
+    },
+    {
+      "path": "gpa-engines",
+      "file": "api.js",
+      "line": 251
+    },
+    {
+      "path": "gpa-engines",
+      "file": "api.js",
+      "line": 255
+    },
+    {
+      "path": "gpa-engines/${gpaEngineId}/mappings",
+      "file": "api.js",
+      "line": 259
+    },
+    {
+      "path": "gpa-engines/${gpaEngineId}/mappings",
+      "file": "api.js",
+      "line": 263
+    },
+    {
+      "path": "gpa-mappings",
+      "file": "api.js",
+      "line": 267
+    },
+    {
+      "path": "subject-categories",
+      "file": "api.js",
+      "line": 273
+    },
+    {
+      "path": "subject-categories",
+      "file": "api.js",
+      "line": 277
+    },
+    {
+      "path": "subject-categories",
+      "file": "api.js",
+      "line": 281
+    },
+    {
+      "path": "subject-categories",
+      "file": "api.js",
+      "line": 285
+    },
+    {
+      "path": "subject-category-mappings",
+      "file": "api.js",
+      "line": 289
+    },
+    {
+      "path": "subject-category-mappings",
+      "file": "api.js",
+      "line": 293
+    },
+    {
+      "path": "report-cards/bulk/download?report_card_ids=${ids.join(",
+      "file": "api.js",
+      "line": 348
+    },
+    {
+      "path": "gpa-engines",
+      "file": "pages\\GpaEnginePage.jsx",
+      "line": 56
+    },
+    {
+      "path": "grade-scales",
+      "file": "pages\\GradeScalePage.jsx",
+      "line": 47
+    },
+    {
+      "path": "static/uploads/school_${auth.profile",
+      "file": "pages\\SettingsPage.jsx",
+      "line": 172
+    },
+    {
+      "path": "static/uploads/${logoPath.split(",
+      "file": "pages\\SetupWizardPage.jsx",
+      "line": 274
+    },
+    {
+      "path": "superadmin/audit-logs${query ? ",
+      "file": "pages\\SuperAdminAuditLogsPage.jsx",
+      "line": 20
+    },
+    {
+      "path": "superadmin/platform/dashboard",
+      "file": "pages\\SuperAdminDashboardPage.jsx",
+      "line": 23
+    },
+    {
+      "path": "superadmin/schools?skip=0&limit=1000",
+      "file": "pages\\SuperAdminDashboardPage.jsx",
+      "line": 27
+    },
+    {
+      "path": "superadmin/platform/dashboard",
+      "file": "pages\\SuperAdminPaymentsPage.jsx",
+      "line": 21
+    },
+    {
+      "path": "superadmin/schools?skip=0&limit=1000",
+      "file": "pages\\SuperAdminPaymentsPage.jsx",
+      "line": 22
+    },
+    {
+      "path": "superadmin/schools",
+      "file": "pages\\SuperAdminPaymentsPage.jsx",
+      "line": 31
+    },
+    {
+      "path": "superadmin/schools?skip=0&limit=1000${query ? ",
+      "file": "pages\\SuperAdminSchoolsPage.jsx",
+      "line": 35
+    },
+    {
+      "path": "superadmin/schools",
+      "file": "pages\\SuperAdminSchoolsPage.jsx",
+      "line": 52
+    },
+    {
+      "path": "superadmin/schools/${schoolId}/${action}",
+      "file": "pages\\SuperAdminSchoolsPage.jsx",
+      "line": 94
+    },
+    {
+      "path": "superadmin/schools/${schoolId}",
+      "file": "pages\\SuperAdminSchoolsPage.jsx",
+      "line": 96
+    },
+    {
+      "path": "superadmin/schools",
+      "file": "pages\\SuperAdminSchoolsPage.jsx",
+      "line": 127
+    },
+    {
+      "path": "superadmin/schools",
+      "file": "pages\\SuperAdminSchoolsPage.jsx",
+      "line": 145
+    },
+    {
+      "path": "superadmin/schools/${schoolId",
+      "file": "pages\\SuperAdminSchoolsPage.jsx",
+      "line": 109
+    },
+    {
+      "path": "api/superadmin/schools/${schoolId",
+      "file": "pages\\SuperAdminSchoolsPage.jsx",
+      "line": 109
+    },
+    {
+      "path": "superadmin/schools?skip=0&limit=1000",
+      "file": "pages\\SuperAdminSubscriptionsPage.jsx",
+      "line": 27
+    },
+    {
+      "path": "superadmin/platform/dashboard",
+      "file": "pages\\SuperAdminSubscriptionsPage.jsx",
+      "line": 28
+    },
+    {
+      "path": "superadmin/schools/${editSchool.id",
+      "file": "pages\\SuperAdminSubscriptionsPage.jsx",
+      "line": 47
+    },
+    {
+      "path": "api/superadmin/schools/${editSchool.id",
+      "file": "pages\\SuperAdminSubscriptionsPage.jsx",
+      "line": 47
+    }
+  ],
+  "missing_frontend": [
+    {
+      "method": "POST",
+      "path": "/users/{user_id}/reset-password",
+      "file": "backend/app/routers/users.py"
+    },
+    {
+      "method": "POST",
+      "path": "/roles",
+      "file": "backend/app/routers/users.py"
+    },
+    {
+      "method": "GET",
+      "path": "/roles",
+      "file": "backend/app/routers/users.py"
+    },
+    {
+      "method": "GET",
+      "path": "/parents/{parent_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/parents/{parent_id}/profile",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "DELETE",
+      "path": "/parents/{parent_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/teachers/{teacher_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/teachers/{teacher_id}/profile",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/teachers/{teacher_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "DELETE",
+      "path": "/teachers/{teacher_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/students/{student_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/students/{student_id}/profile",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/students/{student_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "DELETE",
+      "path": "/students/{student_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "POST",
+      "path": "/students/{student_id}/promote",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "POST",
+      "path": "/students/{student_id}/transfer-certificate",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/students/{student_id}/documents",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "POST",
+      "path": "/students/{student_id}/documents",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "POST",
+      "path": "/students/{student_id}/photo",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/homework-submissions/{submission_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/homework-submissions/{submission_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "DELETE",
+      "path": "/homework-submissions/{submission_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "POST",
+      "path": "/teacher-attendances",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/teacher-attendances",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/teacher-attendances/{attendance_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/teacher-attendances/{attendance_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "DELETE",
+      "path": "/teacher-attendances/{attendance_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/academic-years/{year_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/academic-years/{year_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "DELETE",
+      "path": "/academic-years/{year_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/classes/{class_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/classes/{class_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "DELETE",
+      "path": "/classes/{class_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/sections/{section_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/sections/{section_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "DELETE",
+      "path": "/sections/{section_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/subjects/{subject_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/subjects/{subject_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "DELETE",
+      "path": "/subjects/{subject_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/rooms/{room_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/rooms/{room_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "DELETE",
+      "path": "/rooms/{room_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/subject-allocations/{allocation_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/subject-allocations/{allocation_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "DELETE",
+      "path": "/subject-allocations/{allocation_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/enrollments/{enrollment_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/enrollments/{enrollment_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "DELETE",
+      "path": "/enrollments/{enrollment_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/attendances/{attendance_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/attendances/{attendance_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "DELETE",
+      "path": "/attendances/{attendance_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/homeworks/{homework_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/homeworks/{homework_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "DELETE",
+      "path": "/homeworks/{homework_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/exams/{exam_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/exams/{exam_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "DELETE",
+      "path": "/exams/{exam_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/exam-results/{result_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/exam-results/{result_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "DELETE",
+      "path": "/exam-results/{result_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/fee-structures/{fee_structure_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/fee-structures/{fee_structure_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "DELETE",
+      "path": "/fee-structures/{fee_structure_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/fee-assignments/{assignment_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/fee-assignments/{assignment_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "DELETE",
+      "path": "/fee-assignments/{assignment_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/payments/{payment_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/payments/{payment_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "DELETE",
+      "path": "/payments/{payment_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/notices/{notice_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/notices/{notice_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "DELETE",
+      "path": "/notices/{notice_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "POST",
+      "path": "/messages",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/messages",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/messages/{message_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/messages/{message_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "DELETE",
+      "path": "/messages/{message_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/events/{event_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/events/{event_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "DELETE",
+      "path": "/events/{event_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "POST",
+      "path": "/documents",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/documents",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/documents/{document_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/documents/{document_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "DELETE",
+      "path": "/documents/{document_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/reports/students",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/reports/attendance",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/reports/teachers",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/reports/fees",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/reports/exams",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "POST",
+      "path": "/certificates/generate",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/certificates/{certificate_id}/download",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/certificates/{certificate_id}/preview",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/notices/filter",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/portal/parent/children/{student_id}/profile",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "POST",
+      "path": "/portal/teacher/change-password",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "POST",
+      "path": "/portal/teacher/attendance/bulk",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/portal/teacher/attendance/{attendance_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/portal/teacher/homework/{homework_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "DELETE",
+      "path": "/portal/teacher/homework/{homework_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/portal/teacher/homework/{homework_id}/submissions",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/portal/teacher/homework/{homework_id}/submissions/{submission_id}/grade",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/portal/teacher/exams/{exam_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "DELETE",
+      "path": "/portal/teacher/exams/{exam_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "POST",
+      "path": "/portal/teacher/exams/{exam_id}/marks",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "POST",
+      "path": "/portal/teacher/exams/{exam_id}/marks/bulk",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/portal/teacher/exams/{exam_id}/marks/{result_id}",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/portal/teacher/exams/{exam_id}/marks",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "POST",
+      "path": "/portal/teacher/exams/{exam_id}/publish",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/portal/teacher/students/{student_id}/profile",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/portal/teacher/students/{student_id}/attendance",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/portal/teacher/students/{student_id}/homework",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/portal/teacher/students/{student_id}/performance",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/audit-logs",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/analytics/overview",
+      "file": "backend/app/routers/erp.py"
+    },
+    {
+      "method": "GET",
+      "path": "/notifications/unread",
+      "file": "backend/app/routers/notifications.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/notifications/{notification_id}/read",
+      "file": "backend/app/routers/notifications.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/notifications/{notification_id}/archive",
+      "file": "backend/app/routers/notifications.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/notifications/{notification_id}/restore",
+      "file": "backend/app/routers/notifications.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/notifications/{notification_id}/pin",
+      "file": "backend/app/routers/notifications.py"
+    },
+    {
+      "method": "POST",
+      "path": "/schools",
+      "file": "backend/app/routers/superadmin.py"
+    },
+    {
+      "method": "GET",
+      "path": "/schools",
+      "file": "backend/app/routers/superadmin.py"
+    },
+    {
+      "method": "GET",
+      "path": "/schools/count",
+      "file": "backend/app/routers/superadmin.py"
+    },
+    {
+      "method": "GET",
+      "path": "/schools/{school_id}",
+      "file": "backend/app/routers/superadmin.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/schools/{school_id}",
+      "file": "backend/app/routers/superadmin.py"
+    },
+    {
+      "method": "DELETE",
+      "path": "/schools/{school_id}",
+      "file": "backend/app/routers/superadmin.py"
+    },
+    {
+      "method": "POST",
+      "path": "/schools/{school_id}/activate",
+      "file": "backend/app/routers/superadmin.py"
+    },
+    {
+      "method": "POST",
+      "path": "/schools/{school_id}/suspend",
+      "file": "backend/app/routers/superadmin.py"
+    },
+    {
+      "method": "GET",
+      "path": "/subscriptions/plans",
+      "file": "backend/app/routers/superadmin.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/schools/{school_id}/subscription",
+      "file": "backend/app/routers/superadmin.py"
+    },
+    {
+      "method": "GET",
+      "path": "/schools/{school_id}/statistics",
+      "file": "backend/app/routers/superadmin.py"
+    },
+    {
+      "method": "GET",
+      "path": "/platform/dashboard",
+      "file": "backend/app/routers/superadmin.py"
+    },
+    {
+      "method": "GET",
+      "path": "/platform/analytics",
+      "file": "backend/app/routers/superadmin.py"
+    },
+    {
+      "method": "POST",
+      "path": "/schools/{school_id}/reset-admin-password",
+      "file": "backend/app/routers/superadmin.py"
+    },
+    {
+      "method": "POST",
+      "path": "/timetable/duplicate",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "POST",
+      "path": "/timetable/copy-section",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "POST",
+      "path": "/timetable/generate",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "POST",
+      "path": "/timetable/check-conflicts",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/timetable/conflicts/{conflict_id}/resolve",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "GET",
+      "path": "/teachers/{teacher_id}/timetable",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "GET",
+      "path": "/students/{student_id}/timetable",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "GET",
+      "path": "/classes/{class_id}/timetable",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "GET",
+      "path": "/rooms/{room_id}/timetable",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/periods/{period_id}",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "DELETE",
+      "path": "/periods/{period_id}",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "GET",
+      "path": "/rooms/allocation",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "GET",
+      "path": "/timetable/export/pdf",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "GET",
+      "path": "/timetable/export/excel",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "GET",
+      "path": "/timetable/export/csv",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "GET",
+      "path": "/timetable/print",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "POST",
+      "path": "/timetable/bulk-import",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/timetable/bulk-update",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "DELETE",
+      "path": "/timetable/bulk-delete",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "POST",
+      "path": "/timetable/publish",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "POST",
+      "path": "/timetable/unpublish",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "POST",
+      "path": "/timetable/regenerate",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "GET",
+      "path": "/timetable/reports/teacher-workload",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "GET",
+      "path": "/timetable/reports/room-occupancy",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "GET",
+      "path": "/timetable/reports/class/{class_id}",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "GET",
+      "path": "/timetable/reports/subject-distribution",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "GET",
+      "path": "/timetable/reports/period-analysis",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "POST",
+      "path": "/timetable/notify/published",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "POST",
+      "path": "/timetable/notify/changed",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "POST",
+      "path": "/timetable/notify/room-changed",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "POST",
+      "path": "/timetable/notify/emergency",
+      "file": "backend/app/routers/timetable.py"
+    },
+    {
+      "method": "PUT",
+      "path": "/grading-rules/{rule_id}",
+      "file": "backend/app/routers/report_cards.py"
+    },
+    {
+      "method": "DELETE",
+      "path": "/grading-rules/{rule_id}",
+      "file": "backend/app/routers/report_cards.py"
+    },
+    {
+      "method": "POST",
+      "path": "/report-cards/regenerate/{report_card_id}",
+      "file": "backend/app/routers/report_cards.py"
+    },
+    {
+      "method": "GET",
+      "path": "/report-cards/{report_card_id}/preview",
+      "file": "backend/app/routers/report_cards.py"
+    },
+    {
+      "method": "GET",
+      "path": "/report-cards/bulk/download",
+      "file": "backend/app/routers/report_cards.py"
+    }
+  ]
+}

@@ -21,7 +21,6 @@ from fastapi.responses import FileResponse, StreamingResponse, Response
 
 from .. import models, schemas, auth, report_cards as rc_engine
 from ..database import engine
-from ..tenant import get_current_school_id
 from ..pdf_generator import generate_report_card_pdf
 
 router = APIRouter()
@@ -213,7 +212,7 @@ def session_get(model_class, id: int):
 @router.get("/grading-rules", response_model=List[schemas.GradingRuleRead])
 def list_grading_rules(current_user: models.User = Depends(auth.get_current_user)):
     """List grading rules for the current school."""
-    school_id = get_current_school_id()
+    school_id = current_user.school_id
     with Session(engine) as session:
         statement = select(models.GradingRule).where(models.GradingRule.school_id == school_id)
         rules = session.exec(statement).all()
@@ -224,7 +223,7 @@ def list_grading_rules(current_user: models.User = Depends(auth.get_current_user
 def create_grading_rule(rule_in: schemas.GradingRuleCreate,
                         current_user: models.User = Depends(auth.get_current_user)):
     """Create a new grading rule for the school."""
-    school_id = get_current_school_id()
+    school_id = current_user.school_id
     with Session(engine) as session:
         rule = models.GradingRule(
             school_id=school_id,
@@ -243,7 +242,7 @@ def create_grading_rule(rule_in: schemas.GradingRuleCreate,
 def update_grading_rule(rule_id: int, rule_in: schemas.GradingRuleUpdate,
                         current_user: models.User = Depends(auth.get_current_user)):
     """Update a grading rule."""
-    school_id = get_current_school_id()
+    school_id = current_user.school_id
     with Session(engine) as session:
         rule = session.get(models.GradingRule, rule_id)
         if not rule or rule.school_id != school_id:
@@ -267,7 +266,7 @@ def update_grading_rule(rule_id: int, rule_in: schemas.GradingRuleUpdate,
 @router.delete("/grading-rules/{rule_id}")
 def delete_grading_rule(rule_id: int, current_user: models.User = Depends(auth.get_current_user)):
     """Delete a grading rule."""
-    school_id = get_current_school_id()
+    school_id = current_user.school_id
     with Session(engine) as session:
         rule = session.get(models.GradingRule, rule_id)
         if not rule or rule.school_id != school_id:
@@ -293,7 +292,7 @@ def list_report_cards(
     current_user: models.User = Depends(auth.get_current_user),
 ):
     """List report cards with filtering and search."""
-    school_id = get_current_school_id()
+    school_id = current_user.school_id
     with Session(engine) as session:
         statement = select(models.ReportCard).where(models.ReportCard.school_id == school_id)
 
@@ -350,7 +349,7 @@ def list_report_cards(
 def get_report_card(report_card_id: int,
                     current_user: models.User = Depends(auth.get_current_user)):
     """Get a single report card with subjects."""
-    school_id = get_current_school_id()
+    school_id = current_user.school_id
     with Session(engine) as session:
         rc = session.get(models.ReportCard, report_card_id)
         if not rc or rc.school_id != school_id:
@@ -367,6 +366,39 @@ def get_report_card(report_card_id: int,
         return rc_data
 
 
+@router.post("/report-cards/{report_card_id}/publish")
+def publish_report_card(report_card_id: int,
+                       current_user: models.User = Depends(auth.get_current_user)):
+    """Publish a report card."""
+    school_id = current_user.school_id
+    with Session(engine) as session:
+        rc = session.get(models.ReportCard, report_card_id)
+        if not rc or rc.school_id != school_id:
+            raise HTTPException(status_code=404, detail="Report card not found")
+        rc.status = "published"
+        rc.published_on = datetime.utcnow()
+        session.add(rc)
+        session.commit()
+        session.refresh(rc)
+        return rc
+
+
+@router.post("/report-cards/{report_card_id}/archive")
+def archive_report_card(report_card_id: int,
+                       current_user: models.User = Depends(auth.get_current_user)):
+    """Archive a report card."""
+    school_id = current_user.school_id
+    with Session(engine) as session:
+        rc = session.get(models.ReportCard, report_card_id)
+        if not rc or rc.school_id != school_id:
+            raise HTTPException(status_code=404, detail="Report card not found")
+        rc.status = "archived"
+        session.add(rc)
+        session.commit()
+        session.refresh(rc)
+        return rc
+
+
 @router.post("/report-cards/generate", response_model=schemas.ReportCardRead)
 def generate_report_card(
     req: schemas.ReportCardGenerateRequest,
@@ -380,7 +412,7 @@ def generate_report_card(
     - No duplicate (unless regenerated)
     - Attendance data exists
     """
-    school_id = get_current_school_id()
+    school_id = current_user.school_id
     with Session(engine) as session:
         # Validate student
         student = session.get(models.Student, req.student_id)
@@ -541,7 +573,7 @@ def regenerate_report_card(
     current_user: models.User = Depends(auth.get_current_user),
 ):
     """Regenerate an existing report card with updated data."""
-    school_id = get_current_school_id()
+    school_id = current_user.school_id
     with Session(engine) as session:
         rc = session.get(models.ReportCard, report_card_id)
         if not rc or rc.school_id != school_id:
@@ -669,7 +701,7 @@ def bulk_generate_report_cards(
     """Bulk generate report cards for multiple students.
     Returns progress tracking info.
     """
-    school_id = get_current_school_id()
+    school_id = current_user.school_id
     results = {"total": len(req.student_ids), "completed": 0, "failed": 0, "errors": [], "report_card_ids": []}
 
     for student_id in req.student_ids:
@@ -817,7 +849,7 @@ def bulk_generate_report_cards(
 def preview_report_card(report_card_id: int,
                         current_user: models.User = Depends(auth.get_current_user)):
     """Get preview data for a report card."""
-    school_id = get_current_school_id()
+    school_id = current_user.school_id
     with Session(engine) as session:
         rc = session.get(models.ReportCard, report_card_id)
         if not rc or rc.school_id != school_id:
@@ -900,7 +932,7 @@ def preview_report_card(report_card_id: int,
 def download_report_card_pdf(report_card_id: int,
                              current_user: models.User = Depends(auth.get_current_user)):
     """Download report card as PDF."""
-    school_id = get_current_school_id()
+    school_id = current_user.school_id
     with Session(engine) as session:
         rc = session.get(models.ReportCard, report_card_id)
         if not rc or rc.school_id != school_id:
@@ -981,7 +1013,7 @@ def bulk_download_report_cards_pdf(
     current_user: models.User = Depends(auth.get_current_user),
 ):
     """Download multiple report cards as a ZIP file."""
-    school_id = get_current_school_id()
+    school_id = current_user.school_id
     ids = [int(x.strip()) for x in report_card_ids.split(",") if x.strip()]
 
     zip_buffer = io.BytesIO()
@@ -1088,7 +1120,7 @@ def verify_report_card(verification_id: str):
 def delete_report_card(report_card_id: int,
                        current_user: models.User = Depends(auth.get_current_user)):
     """Delete a report card and its subjects."""
-    school_id = get_current_school_id()
+    school_id = current_user.school_id
     with Session(engine) as session:
         rc = session.get(models.ReportCard, report_card_id)
         if not rc or rc.school_id != school_id:
@@ -1118,7 +1150,7 @@ def delete_report_card(report_card_id: int,
 @router.get("/report-cards/stats/summary")
 def report_card_stats(current_user: models.User = Depends(auth.get_current_user)):
     """Get report card statistics for the school."""
-    school_id = get_current_school_id()
+    school_id = current_user.school_id
     with Session(engine) as session:
         total = session.exec(
             select(func.count(models.ReportCard.id)).where(

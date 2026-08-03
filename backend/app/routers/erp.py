@@ -52,8 +52,11 @@ ADMIN_ROLES = ("Super Admin", "School Admin", "Principal")
 ALL_ADMIN_ROLES = ("Super Admin", "School Admin", "Principal", "Teacher")
 
 
-def create_resource(resource_in, model):
+def create_resource(resource_in, model, current_user=None):
     resource = model(**resource_in.dict())
+    # Explicitly set school_id from current_user to avoid contextvar propagation issues
+    if current_user and hasattr(resource, "school_id") and not getattr(resource, "school_id", None):
+        resource.school_id = current_user.school_id
     return crud.create_item(resource)
 
 
@@ -109,13 +112,13 @@ def make_certificate_pdf(certificate: models.Certificate, student_name: str = ""
         pdf.multi_cell(0, 8, f'Remarks: {certificate.remarks}')
     pdf.ln(10)
     pdf.cell(0, 10, f'Certificate ID: {certificate.id}', ln=True, align='R')
-    return pdf.output(dest='S').encode('latin-1')
+    return bytes(pdf.output(dest='S'))
 
 
 # Parent endpoints
 @router.post("/parents", response_model=schemas.ParentRead, status_code=status.HTTP_201_CREATED)
 def create_parent(parent_in: schemas.ParentCreate, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
-    parent = create_resource(parent_in, models.Parent)
+    parent = create_resource(parent_in, models.Parent, current_user)
     return parent
 
 
@@ -190,7 +193,7 @@ def delete_parent(parent_id: int, current_user=Depends(auth.require_roles(*ADMIN
 # Teacher endpoints
 @router.post("/teachers", response_model=schemas.TeacherRead, status_code=status.HTTP_201_CREATED)
 def create_teacher(teacher_in: schemas.TeacherCreate, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
-    teacher = create_resource(teacher_in, models.Teacher)
+    teacher = create_resource(teacher_in, models.Teacher, current_user)
     return teacher
 
 
@@ -270,7 +273,7 @@ def delete_teacher(teacher_id: int, current_user=Depends(auth.require_roles(*ADM
 # Student endpoints
 @router.post("/students", response_model=schemas.StudentRead, status_code=status.HTTP_201_CREATED)
 def create_student(student_in: schemas.StudentCreate, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
-    student = create_resource(student_in, models.Student)
+    student = create_resource(student_in, models.Student, current_user)
     return student
 
 
@@ -414,7 +417,7 @@ async def upload_student_photo(student_id: int, file: UploadFile = File(...), cu
 # Homework submission endpoints
 @router.post("/homework-submissions", response_model=schemas.HomeworkSubmissionRead, status_code=status.HTTP_201_CREATED)
 def create_homework_submission(submission_in: schemas.HomeworkSubmissionCreate, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
-    submission = create_resource(submission_in, models.HomeworkSubmission)
+    submission = create_resource(submission_in, models.HomeworkSubmission, current_user)
     return submission
 
 
@@ -468,7 +471,7 @@ def delete_homework_submission(submission_id: int, current_user=Depends(auth.req
 # Teacher attendance endpoints
 @router.post("/teacher-attendances", response_model=schemas.TeacherAttendanceRead, status_code=status.HTTP_201_CREATED)
 def create_teacher_attendance(attendance_in: schemas.TeacherAttendanceCreate, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
-    attendance = create_resource(attendance_in, models.TeacherAttendance)
+    attendance = create_resource(attendance_in, models.TeacherAttendance, current_user)
     return attendance
 
 
@@ -517,7 +520,7 @@ def delete_teacher_attendance(attendance_id: int, current_user=Depends(auth.requ
 # Academic year endpoints
 @router.post("/academic-years", response_model=schemas.AcademicYearRead, status_code=status.HTTP_201_CREATED)
 def create_academic_year(year_in: schemas.AcademicYearCreate, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
-    year = create_resource(year_in, models.AcademicYear)
+    year = create_resource(year_in, models.AcademicYear, current_user)
     return year
 
 
@@ -552,7 +555,7 @@ def delete_academic_year(year_id: int, current_user=Depends(auth.require_roles(*
 # Class endpoints
 @router.post("/classes", response_model=schemas.SchoolClassRead, status_code=status.HTTP_201_CREATED)
 def create_class(class_in: schemas.SchoolClassCreate, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
-    school_class = create_resource(class_in, models.SchoolClass)
+    school_class = create_resource(class_in, models.SchoolClass, current_user)
     return school_class
 
 
@@ -587,7 +590,7 @@ def delete_class(class_id: int, current_user=Depends(auth.require_roles(*ADMIN_R
 # Section endpoints
 @router.post("/sections", response_model=schemas.SectionRead, status_code=status.HTTP_201_CREATED)
 def create_section(section_in: schemas.SectionCreate, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
-    section = create_resource(section_in, models.Section)
+    section = create_resource(section_in, models.Section, current_user)
     return section
 
 
@@ -622,7 +625,7 @@ def delete_section(section_id: int, current_user=Depends(auth.require_roles(*ADM
 # Subject endpoints
 @router.post("/subjects", response_model=schemas.SubjectRead, status_code=status.HTTP_201_CREATED)
 def create_subject(subject_in: schemas.SubjectCreate, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
-    subject = create_resource(subject_in, models.Subject)
+    subject = create_resource(subject_in, models.Subject, current_user)
     return subject
 
 
@@ -654,10 +657,74 @@ def delete_subject(subject_id: int, current_user=Depends(auth.require_roles(*ADM
     return {}
 
 
+# Room endpoints
+@router.post("/rooms", response_model=schemas.RoomRead, status_code=status.HTTP_201_CREATED)
+def create_room(room_in: schemas.RoomCreate, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
+    with Session(engine) as session:
+        sid = current_user.school_id
+        if sid is not None:
+            existing = session.exec(
+                select(models.Room).where(
+                    models.Room.school_id == sid,
+                    models.Room.room_name == room_in.room_name,
+                )
+            ).first()
+            if existing:
+                raise HTTPException(status_code=409, detail="Room with this name already exists")
+        room = models.Room(**room_in.dict())
+        room.school_id = sid
+        session.add(room)
+        session.commit()
+        session.refresh(room)
+        return room
+
+
+@router.get("/rooms", response_model=List[schemas.RoomRead])
+def list_rooms(
+    skip: int = 0,
+    limit: int = 100,
+    room_type: Optional[str] = None,
+    is_active: Optional[bool] = None,
+    current_user=Depends(auth.require_roles(*ADMIN_ROLES, *ALL_ADMIN_ROLES)),
+):
+    with Session(engine) as session:
+        statement = select(models.Room)
+        statement = _apply_tenant_filter(statement, models.Room)
+        if room_type:
+            statement = statement.where(models.Room.room_type == room_type)
+        if is_active is not None:
+            statement = statement.where(models.Room.is_active == is_active)
+        statement = statement.order_by(models.Room.id).offset(skip).limit(limit)
+        return session.exec(statement).all()
+
+
+@router.get("/rooms/{room_id}", response_model=schemas.RoomRead)
+def get_room(room_id: int, current_user=Depends(auth.require_roles(*ADMIN_ROLES, *ALL_ADMIN_ROLES))):
+    room = get_resource(models.Room, room_id)
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    return room
+
+
+@router.put("/rooms/{room_id}", response_model=schemas.RoomRead)
+def update_room(room_id: int, room_update: schemas.RoomUpdate, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
+    room = update_resource(models.Room, room_id, room_update.dict(exclude_unset=True))
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    return room
+
+
+@router.delete("/rooms/{room_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_room(room_id: int, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
+    if not delete_resource(models.Room, room_id):
+        raise HTTPException(status_code=404, detail="Room not found")
+    return {}
+
+
 # Subject allocation endpoints
 @router.post("/subject-allocations", response_model=schemas.SubjectAllocationRead, status_code=status.HTTP_201_CREATED)
 def create_subject_allocation(allocation_in: schemas.SubjectAllocationCreate, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
-    allocation = create_resource(allocation_in, models.SubjectAllocation)
+    allocation = create_resource(allocation_in, models.SubjectAllocation, current_user)
     return allocation
 
 
@@ -692,7 +759,7 @@ def delete_subject_allocation(allocation_id: int, current_user=Depends(auth.requ
 # Enrollment endpoints
 @router.post("/enrollments", response_model=schemas.EnrollmentRead, status_code=status.HTTP_201_CREATED)
 def create_enrollment(enrollment_in: schemas.EnrollmentCreate, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
-    enrollment = create_resource(enrollment_in, models.Enrollment)
+    enrollment = create_resource(enrollment_in, models.Enrollment, current_user)
     return enrollment
 
 
@@ -727,7 +794,7 @@ def delete_enrollment(enrollment_id: int, current_user=Depends(auth.require_role
 # Attendance endpoints
 @router.post("/attendances", response_model=schemas.AttendanceRead, status_code=status.HTTP_201_CREATED)
 def create_attendance(attendance_in: schemas.AttendanceCreate, current_user=Depends(auth.require_roles(*ADMIN_ROLES, *ALL_ADMIN_ROLES))):
-    attendance = create_resource(attendance_in, models.Attendance)
+    attendance = create_resource(attendance_in, models.Attendance, current_user)
     return attendance
 
 
@@ -762,7 +829,7 @@ def delete_attendance(attendance_id: int, current_user=Depends(auth.require_role
 # Homework endpoints
 @router.post("/homeworks", response_model=schemas.HomeworkRead, status_code=status.HTTP_201_CREATED)
 def create_homework(homework_in: schemas.HomeworkCreate, current_user=Depends(auth.require_roles(*ADMIN_ROLES, *ALL_ADMIN_ROLES))):
-    homework = create_resource(homework_in, models.Homework)
+    homework = create_resource(homework_in, models.Homework, current_user)
     return homework
 
 
@@ -797,7 +864,7 @@ def delete_homework(homework_id: int, current_user=Depends(auth.require_roles(*A
 # Exam endpoints
 @router.post("/exams", response_model=schemas.ExamRead, status_code=status.HTTP_201_CREATED)
 def create_exam(exam_in: schemas.ExamCreate, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
-    exam = create_resource(exam_in, models.Exam)
+    exam = create_resource(exam_in, models.Exam, current_user)
     return exam
 
 
@@ -832,7 +899,7 @@ def delete_exam(exam_id: int, current_user=Depends(auth.require_roles(*ADMIN_ROL
 # Exam result endpoints
 @router.post("/exam-results", response_model=schemas.ExamResultRead, status_code=status.HTTP_201_CREATED)
 def create_exam_result(result_in: schemas.ExamResultCreate, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
-    result = create_resource(result_in, models.ExamResult)
+    result = create_resource(result_in, models.ExamResult, current_user)
     return result
 
 
@@ -867,7 +934,7 @@ def delete_exam_result(result_id: int, current_user=Depends(auth.require_roles(*
 # Fee structure endpoints
 @router.post("/fee-structures", response_model=schemas.FeeStructureRead, status_code=status.HTTP_201_CREATED)
 def create_fee_structure(fee_structure_in: schemas.FeeStructureCreate, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
-    fee_structure = create_resource(fee_structure_in, models.FeeStructure)
+    fee_structure = create_resource(fee_structure_in, models.FeeStructure, current_user)
     return fee_structure
 
 
@@ -902,7 +969,7 @@ def delete_fee_structure(fee_structure_id: int, current_user=Depends(auth.requir
 # Fee assignment endpoints
 @router.post("/fee-assignments", response_model=schemas.FeeAssignmentRead, status_code=status.HTTP_201_CREATED)
 def create_fee_assignment(fee_assignment_in: schemas.FeeAssignmentCreate, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
-    assignment = create_resource(fee_assignment_in, models.FeeAssignment)
+    assignment = create_resource(fee_assignment_in, models.FeeAssignment, current_user)
     return assignment
 
 
@@ -937,7 +1004,7 @@ def delete_fee_assignment(assignment_id: int, current_user=Depends(auth.require_
 # Payment endpoints
 @router.post("/payments", response_model=schemas.PaymentRead, status_code=status.HTTP_201_CREATED)
 def create_payment(payment_in: schemas.PaymentCreate, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
-    payment = create_resource(payment_in, models.Payment)
+    payment = create_resource(payment_in, models.Payment, current_user)
     return payment
 
 
@@ -972,7 +1039,7 @@ def delete_payment(payment_id: int, current_user=Depends(auth.require_roles(*ADM
 # Notice endpoints
 @router.post("/notices", response_model=schemas.NoticeRead, status_code=status.HTTP_201_CREATED)
 def create_notice(notice_in: schemas.NoticeCreate, current_user=Depends(auth.require_roles(*ADMIN_ROLES, *ALL_ADMIN_ROLES))):
-    notice = create_resource(notice_in, models.Notice)
+    notice = create_resource(notice_in, models.Notice, current_user)
     return notice
 
 
@@ -1007,7 +1074,7 @@ def delete_notice(notice_id: int, current_user=Depends(auth.require_roles(*ADMIN
 # Message endpoints
 @router.post("/messages", response_model=schemas.MessageRead, status_code=status.HTTP_201_CREATED)
 def create_message(message_in: schemas.MessageCreate, current_user=Depends(auth.require_roles(*ADMIN_ROLES, *ALL_ADMIN_ROLES))):
-    message = create_resource(message_in, models.Message)
+    message = create_resource(message_in, models.Message, current_user)
     return message
 
 
@@ -1042,7 +1109,7 @@ def delete_message(message_id: int, current_user=Depends(auth.require_roles(*ADM
 # Event endpoints
 @router.post("/events", response_model=schemas.EventRead, status_code=status.HTTP_201_CREATED)
 def create_event(event_in: schemas.EventCreate, current_user=Depends(auth.require_roles(*ADMIN_ROLES, *ALL_ADMIN_ROLES))):
-    event = create_resource(event_in, models.Event)
+    event = create_resource(event_in, models.Event, current_user)
     return event
 
 
@@ -1077,7 +1144,7 @@ def delete_event(event_id: int, current_user=Depends(auth.require_roles(*ADMIN_R
 # Certificate endpoints
 @router.post("/certificates", response_model=schemas.CertificateRead, status_code=status.HTTP_201_CREATED)
 def create_certificate(certificate_in: schemas.CertificateCreate, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
-    certificate = create_resource(certificate_in, models.Certificate)
+    certificate = create_resource(certificate_in, models.Certificate, current_user)
     return certificate
 
 
@@ -1112,7 +1179,7 @@ def delete_certificate(certificate_id: int, current_user=Depends(auth.require_ro
 # Document endpoints
 @router.post("/documents", response_model=schemas.DocumentRead, status_code=status.HTTP_201_CREATED)
 def create_document(document_in: schemas.DocumentCreate, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
-    document = create_resource(document_in, models.Document)
+    document = create_resource(document_in, models.Document, current_user)
     return document
 
 
@@ -1450,13 +1517,12 @@ def preview_certificate(certificate_id: int, current_user=Depends(auth.require_r
 def get_settings(current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
     with Session(engine) as session:
         sid = get_current_school_id()
-        if sid is not None:
-            statement = select(models.SchoolSettings).where(models.SchoolSettings.school_id == sid)
-            settings = session.exec(statement).first()
-        else:
-            settings = None
+        if sid is None:
+            sid = current_user.school_id or 1
+        statement = select(models.SchoolSettings).where(models.SchoolSettings.school_id == sid)
+        settings = session.exec(statement).first()
         if not settings:
-            settings = crud.create_item(models.SchoolSettings(school_name="My School"))
+            settings = crud.create_item(models.SchoolSettings(school_name="My School", school_id=sid))
     return settings
 
 
@@ -1464,13 +1530,12 @@ def get_settings(current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
 def update_settings(settings_update: schemas.SchoolSettingsUpdate, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
     with Session(engine) as session:
         sid = get_current_school_id()
-        if sid is not None:
-            statement = select(models.SchoolSettings).where(models.SchoolSettings.school_id == sid)
-            settings = session.exec(statement).first()
-        else:
-            settings = None
+        if sid is None:
+            sid = current_user.school_id or 1
+        statement = select(models.SchoolSettings).where(models.SchoolSettings.school_id == sid)
+        settings = session.exec(statement).first()
         if not settings:
-            settings = crud.create_item(models.SchoolSettings(school_name="My School"))
+            settings = crud.create_item(models.SchoolSettings(school_name="My School", school_id=sid))
         updated = update_resource(models.SchoolSettings, settings.id, settings_update.dict(exclude_unset=True))
     return updated
 
@@ -1493,9 +1558,10 @@ async def upload_signature(file: UploadFile = File(...), current_user=Depends(au
 def _upload_settings_file(file: UploadFile, field_name: str) -> dict:
     """Upload a settings asset (logo, stamp, signature) and update SchoolSettings."""
     sid = get_current_school_id()
+    if sid is None:
+        sid = 1
     upload_dir = Path("static/uploads")
-    if sid is not None:
-        upload_dir = upload_dir / f"school_{sid}"
+    upload_dir = upload_dir / f"school_{sid}"
     upload_dir.mkdir(parents=True, exist_ok=True)
     import time
     unique = int(time.time() * 1000)
@@ -1504,13 +1570,10 @@ def _upload_settings_file(file: UploadFile, field_name: str) -> dict:
     contents = file.file.read()
     file_path.write_bytes(contents)
     with Session(engine) as session:
-        if sid is not None:
-            statement = select(models.SchoolSettings).where(models.SchoolSettings.school_id == sid)
-            settings = session.exec(statement).first()
-        else:
-            settings = None
+        statement = select(models.SchoolSettings).where(models.SchoolSettings.school_id == sid)
+        settings = session.exec(statement).first()
         if not settings:
-            settings = crud.create_item(models.SchoolSettings(school_name="My School", **{f"{field_name}_path": str(file_path), "school_id": sid or 0}))
+            settings = crud.create_item(models.SchoolSettings(school_name="My School", school_id=sid, **{f"{field_name}_path": str(file_path)}))
         else:
             update_resource(models.SchoolSettings, settings.id, {f"{field_name}_path": str(file_path)})
     return {f"{field_name}_path": str(file_path)}
@@ -1807,7 +1870,8 @@ async def student_submit_homework(
         else:
             sub = models.HomeworkSubmission(
                 homework_id=homework_id, student_id=student.id,
-                attachment_path=attachment_path, remarks=remarks, status="submitted"
+                attachment_path=attachment_path, remarks=remarks, status="submitted",
+                school_id=current_user.school_id,
             )
             session.add(sub)
             session.commit()
@@ -1892,7 +1956,7 @@ def student_report_card(current_user=Depends(auth.require_roles("Student"))):
             pdf.cell(30, 8, str(r.max_marks or ''), 1)
             pdf.cell(30, 8, e.name, 1)
             pdf.ln()
-        pdf_bytes = pdf.output(dest='S').encode('latin-1')
+        pdf_bytes = bytes(pdf.output(dest='S'))
         return StreamingResponse(io.BytesIO(pdf_bytes), media_type='application/pdf',
             headers={'Content-Disposition': 'attachment; filename="report_card.pdf"'})
 
@@ -1947,7 +2011,7 @@ def student_fee_receipt(payment_id: int, current_user=Depends(auth.require_roles
         pdf.cell(0, 8, f'Amount: ${payment.amount}', ln=True)
         pdf.cell(0, 8, f'Date: {payment.paid_on.strftime("%d %B %Y")}', ln=True)
         pdf.cell(0, 8, f'Reference: {payment.reference or "N/A"}', ln=True)
-        pdf_bytes = pdf.output(dest='S').encode('latin-1')
+        pdf_bytes = bytes(pdf.output(dest='S'))
         return StreamingResponse(io.BytesIO(pdf_bytes), media_type='application/pdf',
             headers={'Content-Disposition': f'attachment; filename="receipt_{payment.id}.pdf"'})
 
@@ -2022,7 +2086,7 @@ def student_portal_messages(skip: int = 0, limit: int = 50, search: Optional[str
 @router.post("/portal/student/messages")
 def student_send_message(msg_in: schemas.MessageCreate, current_user=Depends(auth.require_roles("Student"))):
     msg_in.sender_id = current_user.id
-    return create_resource(msg_in, models.Message)
+    return create_resource(msg_in, models.Message, current_user)
 
 
 @router.put("/portal/student/messages/{message_id}/read")
@@ -2268,7 +2332,7 @@ def parent_child_report_card(student_id: int, current_user=Depends(auth.require_
             pdf.cell(30, 8, str(r.max_marks or ''), 1)
             pdf.cell(30, 8, e.name, 1)
             pdf.ln()
-        pdf_bytes = pdf.output(dest='S').encode('latin-1')
+        pdf_bytes = bytes(pdf.output(dest='S'))
         return StreamingResponse(io.BytesIO(pdf_bytes), media_type='application/pdf',
             headers={'Content-Disposition': 'attachment; filename="report_card.pdf"'})
 
@@ -2325,7 +2389,7 @@ def parent_portal_messages(skip: int = 0, limit: int = 50, search: Optional[str]
 @router.post("/portal/parent/messages")
 def parent_send_message(msg_in: schemas.MessageCreate, current_user=Depends(auth.require_roles("Parent"))):
     msg_in.sender_id = current_user.id
-    return create_resource(msg_in, models.Message)
+    return create_resource(msg_in, models.Message, current_user)
 
 
 @router.get("/portal/parent/children/{student_id}/certificates")
@@ -2548,14 +2612,14 @@ def teacher_portal_attendance(
 
 @router.post("/portal/teacher/attendance")
 def teacher_mark_attendance(attendance_in: schemas.AttendanceCreate, current_user=Depends(auth.require_roles("Teacher"))):
-    return create_resource(attendance_in, models.Attendance)
+    return create_resource(attendance_in, models.Attendance, current_user)
 
 
 @router.post("/portal/teacher/attendance/bulk")
 def teacher_bulk_attendance(attendances: List[schemas.AttendanceCreate], current_user=Depends(auth.require_roles("Teacher"))):
     created = []
     for a in attendances:
-        created.append(create_resource(a, models.Attendance))
+        created.append(create_resource(a, models.Attendance, current_user))
     return created
 
 
@@ -2595,7 +2659,7 @@ def teacher_create_homework(hw_in: schemas.HomeworkCreate, current_user=Depends(
         if not teacher:
             raise HTTPException(404, "Teacher not found")
         hw_in.assigned_by = teacher.id
-    return create_resource(hw_in, models.Homework)
+    return create_resource(hw_in, models.Homework, current_user)
 
 
 @router.put("/portal/teacher/homework/{homework_id}")
@@ -2647,7 +2711,7 @@ def teacher_portal_exams(class_id: Optional[int] = None, current_user=Depends(au
 
 @router.post("/portal/teacher/exams")
 def teacher_create_exam(exam_in: schemas.ExamCreate, current_user=Depends(auth.require_roles("Teacher"))):
-    return create_resource(exam_in, models.Exam)
+    return create_resource(exam_in, models.Exam, current_user)
 
 
 @router.put("/portal/teacher/exams/{exam_id}")
@@ -2668,7 +2732,7 @@ def teacher_delete_exam(exam_id: int, current_user=Depends(auth.require_roles("T
 @router.post("/portal/teacher/exams/{exam_id}/marks")
 def teacher_enter_marks(exam_id: int, result_in: schemas.ExamResultCreate, current_user=Depends(auth.require_roles("Teacher"))):
     result_in.exam_id = exam_id
-    return create_resource(result_in, models.ExamResult)
+    return create_resource(result_in, models.ExamResult, current_user)
 
 
 @router.post("/portal/teacher/exams/{exam_id}/marks/bulk")
@@ -2676,7 +2740,7 @@ def teacher_bulk_marks(exam_id: int, results: List[schemas.ExamResultCreate], cu
     created = []
     for r in results:
         r.exam_id = exam_id
-        created.append(create_resource(r, models.ExamResult))
+        created.append(create_resource(r, models.ExamResult, current_user))
     return created
 
 
@@ -2756,7 +2820,7 @@ def teacher_student_performance(student_id: int, current_user=Depends(auth.requi
 @router.post("/portal/teacher/notices")
 def teacher_create_notice(notice_in: schemas.NoticeCreate, current_user=Depends(auth.require_roles("Teacher"))):
     notice_in.created_by = current_user.id
-    return create_resource(notice_in, models.Notice)
+    return create_resource(notice_in, models.Notice, current_user)
 
 
 @router.get("/portal/teacher/calendar")
@@ -2791,64 +2855,7 @@ def teacher_portal_messages(skip: int = 0, limit: int = 50, search: Optional[str
 @router.post("/portal/teacher/messages")
 def teacher_send_message(msg_in: schemas.MessageCreate, current_user=Depends(auth.require_roles("Teacher"))):
     msg_in.sender_id = current_user.id
-    return create_resource(msg_in, models.Message)
-
-
-# ========== TIMETABLE ==========
-@router.post("/timetable", response_model=schemas.TimetableRead, status_code=201)
-def create_timetable_entry(entry_in: schemas.TimetableCreate, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
-    with Session(engine) as session:
-        conflict = session.exec(select(models.Timetable).where(
-            models.Timetable.day_of_week == entry_in.day_of_week,
-            models.Timetable.period == entry_in.period,
-            models.Timetable.class_id == entry_in.class_id,
-            models.Timetable.teacher_id == entry_in.teacher_id,
-            models.Timetable.academic_year_id == entry_in.academic_year_id,
-        )).first()
-        if conflict:
-            raise HTTPException(400, "Schedule conflict detected for this teacher/class/period")
-    return create_resource(entry_in, models.Timetable)
-
-
-@router.get("/timetable", response_model=List[schemas.TimetableRead])
-def list_timetable(class_id: Optional[int] = None, section_id: Optional[int] = None, teacher_id: Optional[int] = None, day_of_week: Optional[int] = None, current_user=Depends(auth.require_roles(*ADMIN_ROLES, *ALL_ADMIN_ROLES))):
-    with Session(engine) as session:
-        statement = select(models.Timetable)
-        statement = _apply_tenant_filter(statement, models.Timetable)
-        if class_id: statement = statement.where(models.Timetable.class_id == class_id)
-        if section_id: statement = statement.where(models.Timetable.section_id == section_id)
-        if teacher_id: statement = statement.where(models.Timetable.teacher_id == teacher_id)
-        if day_of_week is not None: statement = statement.where(models.Timetable.day_of_week == day_of_week)
-        return session.exec(statement).all()
-
-
-@router.put("/timetable/{entry_id}", response_model=schemas.TimetableRead)
-def update_timetable_entry(entry_id: int, entry_update: schemas.TimetableUpdate, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
-    entry = update_resource(models.Timetable, entry_id, entry_update.dict(exclude_unset=True))
-    if not entry: raise HTTPException(404)
-    return entry
-
-
-@router.delete("/timetable/{entry_id}")
-def delete_timetable_entry(entry_id: int, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
-    if not delete_resource(models.Timetable, entry_id): raise HTTPException(404)
-    return {}
-
-
-@router.get("/timetable/check-conflicts")
-def check_timetable_conflicts(class_id: Optional[int] = None, teacher_id: Optional[int] = None, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
-    with Session(engine) as session:
-        statement = select(models.Timetable)
-        if class_id: statement = statement.where(models.Timetable.class_id == class_id)
-        if teacher_id: statement = statement.where(models.Timetable.teacher_id == teacher_id)
-        entries = session.exec(statement).all()
-        conflicts = []
-        for i, e1 in enumerate(entries):
-            for e2 in entries[i+1:]:
-                if e1.day_of_week == e2.day_of_week and e1.period == e2.period:
-                    if (e1.teacher_id == e2.teacher_id) or (e1.class_id == e2.class_id):
-                        conflicts.append({"entry1_id": e1.id, "entry2_id": e2.id, "day": e1.day_of_week, "period": e1.period})
-        return {"conflicts": conflicts, "total_entries": len(entries)}
+    return create_resource(msg_in, models.Message, current_user)
 
 
 # ========== AUDIT LOG ==========
@@ -2895,3 +2902,75 @@ def analytics_overview(current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
             "fee_collection": float(fee_collection),
             "pass_percentage": pass_pct,
         }
+
+
+@router.get("/search")
+def global_search(q: str = Query(..., min_length=1), current_user: models.User = Depends(auth.get_current_user)):
+    """Global search across students, teachers, classes, and sections."""
+    school_id = get_current_school_id()
+    results = []
+    with Session(engine) as session:
+        pattern = f"%{q}%"
+
+        students = session.exec(
+            select(models.Student).where(
+                models.Student.school_id == school_id,
+                or_(
+                    models.Student.admission_no.like(pattern),
+                    models.User.full_name.like(pattern),
+                )
+            ).join(models.User, models.Student.user_id == models.User.id, isouter=True).limit(10)
+        ).all()
+        for s in students:
+            user = session.get(models.User, s.user_id) if s.user_id else None
+            results.append({
+                "title": user.full_name if user else f"Student #{s.id}",
+                "subtitle": f"Admission: {s.admission_no or 'N/A'}",
+                "icon": "👨‍🎓",
+                "url": f"/students/{s.id}",
+            })
+
+        teachers = session.exec(
+            select(models.User).where(
+                models.User.school_id == school_id,
+                models.User.role == "Teacher",
+                models.User.full_name.like(pattern),
+            ).limit(10)
+        ).all()
+        for t in teachers:
+            results.append({
+                "title": t.full_name,
+                "subtitle": "Teacher",
+                "icon": "👩‍🏫",
+                "url": f"/teachers/{t.id}",
+            })
+
+        classes = session.exec(
+            select(models.SchoolClass).where(
+                models.SchoolClass.school_id == school_id,
+                models.SchoolClass.name.like(pattern),
+            ).limit(10)
+        ).all()
+        for c in classes:
+            results.append({
+                "title": c.name,
+                "subtitle": f"Class (Grade: {c.grade_level or 'N/A'})",
+                "icon": "🏫",
+                "url": f"/classes/{c.id}",
+            })
+
+        sections = session.exec(
+            select(models.Section).where(
+                models.Section.school_id == school_id,
+                models.Section.name.like(pattern),
+            ).limit(10)
+        ).all()
+        for s in sections:
+            results.append({
+                "title": s.name,
+                "subtitle": "Section",
+                "icon": "📂",
+                "url": f"/sections/{s.id}",
+            })
+
+    return {"results": results}

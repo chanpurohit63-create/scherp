@@ -16,13 +16,13 @@ def create_user(user_in: schemas.UserCreate, current_user: models.User = Depends
     hashed = auth.get_password_hash(user_in.password)
     user = models.User(email=user_in.email, hashed_password=hashed, full_name=user_in.full_name, role=user_in.role)
     created = crud.create_user(user)
-    return schemas.UserRead(id=created.id, email=created.email, full_name=created.full_name, role=created.role, is_active=created.is_active)
+    return schemas.UserRead(id=created.id, email=created.email, full_name=created.full_name, role=created.role, is_active=created.is_active, school_id=created.school_id)
 
 
 @router.get("/users", response_model=List[schemas.UserRead])
 def list_users(skip: int = 0, limit: int = 100, current_user: models.User = Depends(auth.require_roles("Super Admin", "School Admin"))):
     users = crud.get_users(skip=skip, limit=limit)
-    return [schemas.UserRead(id=u.id, email=u.email, full_name=u.full_name, role=u.role, is_active=u.is_active) for u in users]
+    return [schemas.UserRead(id=u.id, email=u.email, full_name=u.full_name, role=u.role, is_active=u.is_active, school_id=u.school_id) for u in users]
 
 
 @router.get("/users/{user_id}", response_model=schemas.UserRead)
@@ -30,7 +30,7 @@ def get_user(user_id: int, current_user: models.User = Depends(auth.require_role
     user = crud.get_user(user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    return schemas.UserRead(id=user.id, email=user.email, full_name=user.full_name, role=user.role, is_active=user.is_active)
+    return schemas.UserRead(id=user.id, email=user.email, full_name=user.full_name, role=user.role, is_active=user.is_active, school_id=user.school_id)
 
 
 @router.put("/users/{user_id}", response_model=schemas.UserRead)
@@ -39,7 +39,7 @@ def update_user(user_id: int, user_update: schemas.UserUpdate, current_user: mod
     user = crud.update_user(user_id, values)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    return schemas.UserRead(id=user.id, email=user.email, full_name=user.full_name, role=user.role, is_active=user.is_active)
+    return schemas.UserRead(id=user.id, email=user.email, full_name=user.full_name, role=user.role, is_active=user.is_active, school_id=user.school_id)
 
 
 @router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -63,14 +63,14 @@ def reset_password(user_id: int, current_user: models.User = Depends(auth.requir
 # ========== PROFILE & PASSWORD ==========
 @router.get("/profile", response_model=schemas.UserRead)
 def get_profile(current_user: models.User = Depends(auth.get_current_user)):
-    return schemas.UserRead(id=current_user.id, email=current_user.email, full_name=current_user.full_name, role=current_user.role, is_active=current_user.is_active)
+    return schemas.UserRead(id=current_user.id, email=current_user.email, full_name=current_user.full_name, role=current_user.role, is_active=current_user.is_active, school_id=current_user.school_id)
 
 
 @router.put("/profile", response_model=schemas.UserRead)
 def update_profile(profile_update: schemas.UserUpdate, current_user: models.User = Depends(auth.get_current_user)):
     values = profile_update.dict(exclude_unset=True)
     user = crud.update_user(current_user.id, values)
-    return schemas.UserRead(id=user.id, email=user.email, full_name=user.full_name, role=user.role, is_active=user.is_active)
+    return schemas.UserRead(id=user.id, email=user.email, full_name=user.full_name, role=user.role, is_active=user.is_active, school_id=user.school_id)
 
 
 @router.post("/profile/change-password")

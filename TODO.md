@@ -1,22 +1,23 @@
-# Phase 3: Enterprise Timetable Management System
+# API Connectivity Verification - TODO
 
-## Steps
+## Step 1: Register missing `report_card.py` router in main.py
+- [ ] Add import for `report_cards as enterprise_report_cards` from `report_card.py`
+- [ ] Add router include statement (prefix `/api`) - AFTER the plural report_cards to avoid route conflicts
 
-### Step 1: Database Models
-- [ ] Add `Room` model to `backend/app/models.py`
-- [ ] Upgrade `Timetable` model with new fields (room_id, status, remarks, created_by, updated_by, created_at, updated_at)
+## Step 2: Verify schemas exist for enterprise endpoints
+- [x] Added new schema classes in schemas.py (ReportCardTemplate*, ReportCardComponent*, ExaminationType*, GradeScale*, GpaEngine*, SubjectCategory*, ExamWeightageConfig*)
 
-### Step 2: Pydantic Schemas
-- [ ] Add Room schemas (Create, Read, Update) to `backend/app/schemas.py`
-- [ ] Upgrade Timetable schemas with new fields
+## Step 3: Run comprehensive API connectivity verification
+- [ ] Start backend server
+- [ ] Run verify_api_connectivity.py or create new verification
+- [ ] Check all endpoints respond correctly
+- [ ] Verify database connections work
 
-### Step 3: API Endpoints
-- [ ] Add Room CRUD endpoints (POST/GET/PUT/DELETE) to `backend/app/routers/erp.py`
-- [ ] Upgrade Timetable CRUD with enhanced conflict detection
-- [ ] Add Teacher Timetable endpoint: `GET /portal/teacher/timetable`
-- [ ] Add Student Timetable endpoint: `GET /portal/student/timetable`
-- [ ] Add Class Timetable endpoint: `GET /timetable/class/{class_id}`
-- [ ] Add Room Timetable endpoint: `GET /timetable/room/{room_id}`
-- [ ] Add Printable Timetable: `GET /timetable/printable/{class_id}`
-- [ ] Add Weekly/Daily Schedule endpoints
+## Step 4: Fix any discovered connectivity issues
+- [ ] Address any 404/500 errors from missing routes
+- [ ] Fix any schema mismatches between frontend and backend
+
+## Step 5: Generate final connectivity report
+- [ ] List all modules and their connection status
+- [ ] Document any remaining issues or warnings
 

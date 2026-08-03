@@ -1,0 +1,132 @@
+{
+  "school_id": 3,
+  "admin_email": "admin@greenwood.edu",
+  "admin_password": "Greenwood@2026",
+  "results": [
+    {
+      "test": "Super Admin Login",
+      "status": "PASS",
+      "detail": "Got token (status 200)"
+    },
+    {
+      "test": "Get Current User (/users/me)",
+      "status": "PASS",
+      "detail": "Role: Super Admin, Name: Super Admin"
+    },
+    {
+      "test": "Super Admin Dashboard",
+      "status": "PASS",
+      "detail": "Data: {\"total_schools\": 3, \"active_schools\": 3, \"inactive_schools\": 0, \"suspended_schools\": 0, \"expired_schools\": 0, \"total_students\": 5, \"total_teachers\": 2, \"total_parents\": 5, \"total_staff\": 2, \"total_re"
+    },
+    {
+      "test": "Platform Analytics",
+      "status": "PASS",
+      "detail": "Data: {\"total_schools\": 3, \"active_schools\": 3, \"suspended_schools\": 0, \"expired_schools\": 0, \"total_students\": 5, \"total_teachers\": 2, \"total_revenue\": 15000.0, \"schools\": [{\"id\": 1, \"school_name\": \"Defaul"
+    },
+    {
+      "test": "List Schools",
+      "status": "PASS",
+      "detail": "Found 3 schools"
+    },
+    {
+      "test": "School Count",
+      "status": "PASS",
+      "detail": "Count: {'count': 3}"
+    },
+    {
+      "test": "Create School",
+      "status": "FAIL",
+      "detail": "Status 400: {\"detail\":\"School code already exists\"}"
+    },
+    {
+      "test": "Create School (found existing)",
+      "status": "PASS",
+      "detail": "Using existing school ID=3"
+    },
+    {
+      "test": "Create School Admin User",
+      "status": "PASS",
+      "detail": "Admin: admin@greenwood.edu"
+    },
+    {
+      "test": "Get School Details",
+      "status": "PASS",
+      "detail": "Name: Greenwood International Academy, Code: GIS2026"
+    },
+    {
+      "test": "School Statistics",
+      "status": "PASS",
+      "detail": "Data: {\"school_id\": 3, \"school_name\": \"Greenwood International Academy\", \"total_students\": 0, \"total_teachers\": 0, \"total_parents\": 0, \"total_classes\": 0, \"total_revenue\": 0.0, \"subscription_plan\": \"premium"
+    },
+    {
+      "test": "Edit School",
+      "status": "PASS",
+      "detail": "Updated name to: Greenwood International Academy"
+    },
+    {
+      "test": "Get Subscription (from school)",
+      "status": "PASS",
+      "detail": "Plan: premium, Start: 2026-08-03, End: 2027-08-03"
+    },
+    {
+      "test": "Update Subscription",
+      "status": "PASS",
+      "detail": "Updated to enterprise plan, student_limit=10000"
+    },
+    {
+      "test": "Suspend School",
+      "status": "PASS",
+      "detail": "School suspended"
+    },
+    {
+      "test": "Verify Suspended Status",
+      "status": "PASS",
+      "detail": "Status is 'suspended'"
+    },
+    {
+      "test": "Activate School",
+      "status": "PASS",
+      "detail": "School activated"
+    },
+    {
+      "test": "Verify Active Status",
+      "status": "PASS",
+      "detail": "Status is 'active'"
+    },
+    {
+      "test": "Reset Admin Password",
+      "status": "FAIL",
+      "detail": "Status 500: Internal Server Error"
+    },
+    {
+      "test": "Search Schools (by name)",
+      "status": "PASS",
+      "detail": "Found 1 matching 'Greenwood'"
+    },
+    {
+      "test": "Filter Schools (status=active)",
+      "status": "PASS",
+      "detail": "Found 3 active schools"
+    },
+    {
+      "test": "Pagination (skip=0, limit=2)",
+      "status": "PASS",
+      "detail": "Got 2 schools (API uses skip/limit)"
+    },
+    {
+      "test": "Pagination (skip=2, limit=2)",
+      "status": "PASS",
+      "detail": "Got 1 schools"
+    },
+    {
+      "test": "Audit Logs",
+      "status": "PASS",
+      "detail": "Data: [{'id': 12, 'user_id': 1, 'school_id': 3, 'action': 'school.activated', 'resource': 'school', 'resource_id': 3, 'details': 'Activated school: Greenwood International Academy', 'before_values': '{\"scho"
+    },
+    {
+      "test": "Subscription Plans",
+      "status": "PASS",
+      "detail": "Data: [{'name': 'Free', 'max_students': 50, 'max_teachers': 5, 'storage_mb': 100, 'modules': ['students', 'attendance', 'homework'], 'price_monthly': 0.0, 'price_yearly': 0.0}, {'name': 'Basic', 'max_studen"
+    }
+  ]
+}

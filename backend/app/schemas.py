@@ -863,6 +863,48 @@ class TimetableUpdate(BaseModel):
     remarks: Optional[str] = None
 
 
+# ========== ROOM ==========
+
+class RoomCreate(BaseModel):
+    room_name: str
+    room_number: Optional[str] = None
+    building: Optional[str] = None
+    floor: Optional[int] = None
+    capacity: Optional[int] = None
+    room_type: Optional[str] = "Classroom"
+    color: Optional[str] = None
+    is_active: Optional[bool] = True
+
+
+class RoomRead(BaseModel):
+    id: int
+    school_id: int
+    room_name: str
+    room_number: Optional[str] = None
+    building: Optional[str] = None
+    floor: Optional[int] = None
+    capacity: Optional[int] = None
+    room_type: Optional[str] = None
+    color: Optional[str] = None
+    is_active: bool = True
+    created_on: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        orm_mode = True
+
+
+class RoomUpdate(BaseModel):
+    room_name: Optional[str] = None
+    room_number: Optional[str] = None
+    building: Optional[str] = None
+    floor: Optional[int] = None
+    capacity: Optional[int] = None
+    room_type: Optional[str] = None
+    color: Optional[str] = None
+    is_active: Optional[bool] = None
+
+
 class PeriodMasterCreate(BaseModel):
     period_name: str
     period_number: int
@@ -1275,7 +1317,9 @@ class ReportCardRead(BaseModel):
     school_id: int
     student_id: int
     exam_id: int
+    class_id: Optional[int] = None
     academic_year_id: int
+    template_id: Optional[int] = None
     total_marks: float
     obtained_marks: float
     percentage: float
@@ -1292,8 +1336,11 @@ class ReportCardRead(BaseModel):
     verification_id: str
     pdf_path: Optional[str] = None
     is_regenerated: bool
+    status: str = "draft"
     generated_by: Optional[int] = None
     generated_on: Optional[datetime] = None
+    published_on: Optional[datetime] = None
+    created_on: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     subjects: List[ReportCardSubjectRead] = []
 
@@ -1355,3 +1402,527 @@ class BulkGenerateProgress(BaseModel):
     failed: int
     status: str
     errors: List[str] = []
+
+
+# ========== REPORT CARD TEMPLATES (Enterprise) ==========
+
+class ReportCardTemplateCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    template_type: Optional[str] = "standard"
+    academic_year_id: Optional[int] = None
+    class_id: Optional[int] = None
+    exam_id: Optional[int] = None
+    is_default: Optional[bool] = False
+    config: Optional[str] = None
+    header_config: Optional[str] = None
+    footer_config: Optional[str] = None
+    body_config: Optional[str] = None
+    css_config: Optional[str] = None
+
+
+class ReportCardTemplateUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    template_type: Optional[str] = None
+    academic_year_id: Optional[int] = None
+    class_id: Optional[int] = None
+    exam_id: Optional[int] = None
+    is_default: Optional[bool] = None
+    is_archived: Optional[bool] = None
+    config: Optional[str] = None
+    header_config: Optional[str] = None
+    footer_config: Optional[str] = None
+    body_config: Optional[str] = None
+    css_config: Optional[str] = None
+
+
+class ReportCardTemplateRead(BaseModel):
+    id: int
+    school_id: int
+    name: str
+    description: Optional[str] = None
+    template_type: str
+    academic_year_id: Optional[int] = None
+    class_id: Optional[int] = None
+    exam_id: Optional[int] = None
+    is_default: bool = False
+    is_archived: bool = False
+    version: int = 1
+    parent_template_id: Optional[int] = None
+    config: Optional[str] = None
+    header_config: Optional[str] = None
+    footer_config: Optional[str] = None
+    body_config: Optional[str] = None
+    css_config: Optional[str] = None
+    created_by: Optional[int] = None
+    created_on: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        orm_mode = True
+
+
+# ========== REPORT CARD COMPONENTS ==========
+
+class ReportCardComponentCreate(BaseModel):
+    template_id: int
+    component_type: str
+    label: str
+    x_position: Optional[float] = 0.0
+    y_position: Optional[float] = 0.0
+    width: Optional[float] = 100.0
+    height: Optional[float] = 50.0
+    font_size: Optional[int] = None
+    font_color: Optional[str] = None
+    font_family: Optional[str] = None
+    font_weight: Optional[str] = None
+    border_radius: Optional[int] = None
+    border_width: Optional[int] = None
+    border_color: Optional[str] = None
+    background_color: Optional[str] = None
+    margin_top: Optional[float] = None
+    margin_bottom: Optional[float] = None
+    margin_left: Optional[float] = None
+    margin_right: Optional[float] = None
+    padding: Optional[float] = None
+    is_visible: Optional[bool] = True
+    is_editable: Optional[bool] = True
+    data_source: Optional[str] = None
+    default_value: Optional[str] = None
+    sort_order: Optional[int] = 0
+
+
+class ReportCardComponentUpdate(BaseModel):
+    template_id: Optional[int] = None
+    component_type: Optional[str] = None
+    label: Optional[str] = None
+    x_position: Optional[float] = None
+    y_position: Optional[float] = None
+    width: Optional[float] = None
+    height: Optional[float] = None
+    font_size: Optional[int] = None
+    font_color: Optional[str] = None
+    font_family: Optional[str] = None
+    font_weight: Optional[str] = None
+    border_radius: Optional[int] = None
+    border_width: Optional[int] = None
+    border_color: Optional[str] = None
+    background_color: Optional[str] = None
+    margin_top: Optional[float] = None
+    margin_bottom: Optional[float] = None
+    margin_left: Optional[float] = None
+    margin_right: Optional[float] = None
+    padding: Optional[float] = None
+    is_visible: Optional[bool] = None
+    is_editable: Optional[bool] = None
+    data_source: Optional[str] = None
+    default_value: Optional[str] = None
+    sort_order: Optional[int] = None
+
+
+class ReportCardComponentRead(BaseModel):
+    id: int
+    template_id: int
+    school_id: int
+    component_type: str
+    label: str
+    x_position: float
+    y_position: float
+    width: float
+    height: float
+    font_size: Optional[int] = None
+    font_color: Optional[str] = None
+    font_family: Optional[str] = None
+    font_weight: Optional[str] = None
+    border_radius: Optional[int] = None
+    border_width: Optional[int] = None
+    border_color: Optional[str] = None
+    background_color: Optional[str] = None
+    margin_top: Optional[float] = None
+    margin_bottom: Optional[float] = None
+    margin_left: Optional[float] = None
+    margin_right: Optional[float] = None
+    padding: Optional[float] = None
+    is_visible: bool = True
+    is_editable: bool = True
+    data_source: Optional[str] = None
+    default_value: Optional[str] = None
+    sort_order: int = 0
+    created_on: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        orm_mode = True
+
+
+# ========== EXAMINATION TYPES ==========
+
+class ExaminationTypeCreate(BaseModel):
+    name: str
+    code: Optional[str] = None
+    exam_type: Optional[str] = "theory"
+    weightage: Optional[float] = 0.0
+    max_marks: Optional[float] = None
+    passing_marks: Optional[float] = None
+    duration_minutes: Optional[int] = None
+    is_active: Optional[bool] = True
+    is_published: Optional[bool] = False
+    show_in_report_card: Optional[bool] = True
+    sort_order: Optional[int] = 0
+
+
+class ExaminationTypeUpdate(BaseModel):
+    name: Optional[str] = None
+    code: Optional[str] = None
+    exam_type: Optional[str] = None
+    weightage: Optional[float] = None
+    max_marks: Optional[float] = None
+    passing_marks: Optional[float] = None
+    duration_minutes: Optional[int] = None
+    is_active: Optional[bool] = None
+    is_published: Optional[bool] = None
+    show_in_report_card: Optional[bool] = None
+    sort_order: Optional[int] = None
+
+
+class ExaminationTypeRead(BaseModel):
+    id: int
+    school_id: int
+    name: str
+    code: Optional[str] = None
+    exam_type: str
+    weightage: float
+    max_marks: Optional[float] = None
+    passing_marks: Optional[float] = None
+    duration_minutes: Optional[int] = None
+    is_active: bool = True
+    is_published: bool = False
+    show_in_report_card: bool = True
+    sort_order: int = 0
+    created_on: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        orm_mode = True
+
+
+# ========== EXAM WEIGHTAGE CONFIG ==========
+
+class ExamWeightageConfigCreate(BaseModel):
+    academic_year_id: int
+    class_id: int
+    exam_type_id: int
+    weightage: float = 0.0
+    max_marks: Optional[float] = None
+    passing_marks: Optional[float] = None
+
+
+class ExamWeightageConfigRead(BaseModel):
+    id: int
+    school_id: int
+    academic_year_id: int
+    class_id: int
+    exam_type_id: int
+    weightage: float
+    max_marks: Optional[float] = None
+    passing_marks: Optional[float] = None
+    is_active: bool = True
+    created_on: Optional[datetime] = None
+
+    class Config:
+        orm_mode = True
+
+
+# ========== GRADE SCALES ==========
+
+class GradeScaleCreate(BaseModel):
+    name: str
+    scale_type: Optional[str] = "percentage"
+    min_value: Optional[float] = 0.0
+    max_value: Optional[float] = 100.0
+    passing_value: Optional[float] = 40.0
+    is_default: Optional[bool] = False
+
+
+class GradeScaleUpdate(BaseModel):
+    name: Optional[str] = None
+    scale_type: Optional[str] = None
+    min_value: Optional[float] = None
+    max_value: Optional[float] = None
+    passing_value: Optional[float] = None
+    is_default: Optional[bool] = None
+    is_active: Optional[bool] = None
+
+
+class GradeScaleRead(BaseModel):
+    id: int
+    school_id: int
+    name: str
+    scale_type: str
+    min_value: float
+    max_value: float
+    passing_value: float
+    is_default: bool = False
+    is_active: bool = True
+    created_on: Optional[datetime] = None
+
+    class Config:
+        orm_mode = True
+
+
+# ========== GRADE SCALE RANGES ==========
+
+class GradeScaleRangeCreate(BaseModel):
+    grade_scale_id: int
+    grade: str
+    grade_point: Optional[float] = None
+    min_mark: float
+    max_mark: float
+    description: Optional[str] = None
+    is_passing: Optional[bool] = True
+    sort_order: Optional[int] = 0
+
+
+class GradeScaleRangeUpdate(BaseModel):
+    grade: Optional[str] = None
+    grade_point: Optional[float] = None
+    min_mark: Optional[float] = None
+    max_mark: Optional[float] = None
+    description: Optional[str] = None
+    is_passing: Optional[bool] = None
+    sort_order: Optional[int] = None
+
+
+class GradeScaleRangeRead(BaseModel):
+    id: int
+    grade_scale_id: int
+    school_id: int
+    grade: str
+    grade_point: Optional[float] = None
+    min_mark: float
+    max_mark: float
+    description: Optional[str] = None
+    is_passing: bool = True
+    sort_order: int = 0
+
+    class Config:
+        orm_mode = True
+
+
+# ========== GPA ENGINE ==========
+
+class GpaEngineConfigCreate(BaseModel):
+    name: str
+    scale_type: Optional[str] = "4_point"
+    max_gpa: Optional[float] = 4.0
+    min_gpa: Optional[float] = 0.0
+    grade_point_decimals: Optional[int] = 2
+    credit_based: Optional[bool] = False
+    weighted: Optional[bool] = False
+    formula_config: Optional[str] = None
+
+
+class GpaEngineConfigUpdate(BaseModel):
+    name: Optional[str] = None
+    scale_type: Optional[str] = None
+    max_gpa: Optional[float] = None
+    min_gpa: Optional[float] = None
+    grade_point_decimals: Optional[int] = None
+    credit_based: Optional[bool] = None
+    weighted: Optional[bool] = None
+    formula_config: Optional[str] = None
+    is_active: Optional[bool] = None
+
+
+class GpaEngineConfigRead(BaseModel):
+    id: int
+    school_id: int
+    name: str
+    scale_type: str
+    max_gpa: float
+    min_gpa: float
+    grade_point_decimals: int
+    credit_based: bool
+    weighted: bool
+    formula_config: Optional[str] = None
+    is_active: bool = True
+    created_on: Optional[datetime] = None
+
+    class Config:
+        orm_mode = True
+
+
+# ========== GPA GRADE MAPPINGS ==========
+
+class GpaGradeMappingCreate(BaseModel):
+    gpa_engine_id: int
+    grade: str
+    grade_point: float
+    min_percentage: float
+    max_percentage: float
+    description: Optional[str] = None
+    is_passing: Optional[bool] = True
+    sort_order: Optional[int] = 0
+
+
+class GpaGradeMappingUpdate(BaseModel):
+    grade: Optional[str] = None
+    grade_point: Optional[float] = None
+    min_percentage: Optional[float] = None
+    max_percentage: Optional[float] = None
+    description: Optional[str] = None
+    is_passing: Optional[bool] = None
+    sort_order: Optional[int] = None
+
+
+class GpaGradeMappingRead(BaseModel):
+    id: int
+    gpa_engine_id: int
+    school_id: int
+    grade: str
+    grade_point: float
+    min_percentage: float
+    max_percentage: float
+    description: Optional[str] = None
+    is_passing: bool = True
+    sort_order: int = 0
+
+    class Config:
+        orm_mode = True
+
+
+# ========== SUBJECT CATEGORIES ==========
+
+class SubjectCategoryCreate(BaseModel):
+    name: str
+    code: Optional[str] = None
+    description: Optional[str] = None
+    color: Optional[str] = None
+    sort_order: Optional[int] = 0
+
+
+class SubjectCategoryUpdate(BaseModel):
+    name: Optional[str] = None
+    code: Optional[str] = None
+    description: Optional[str] = None
+    color: Optional[str] = None
+    sort_order: Optional[int] = None
+    is_active: Optional[bool] = None
+
+
+class SubjectCategoryRead(BaseModel):
+    id: int
+    school_id: int
+    name: str
+    code: Optional[str] = None
+    description: Optional[str] = None
+    color: Optional[str] = None
+    is_active: bool = True
+    sort_order: int = 0
+    created_on: Optional[datetime] = None
+
+    class Config:
+        orm_mode = True
+
+
+class SubjectCategoryMappingCreate(BaseModel):
+    subject_id: int
+    category_id: int
+    is_primary: Optional[bool] = True
+
+
+class SubjectCategoryMappingRead(BaseModel):
+    id: int
+    school_id: int
+    subject_id: int
+    category_id: int
+    is_primary: bool = True
+    created_on: Optional[datetime] = None
+
+    class Config:
+        orm_mode = True
+
+
+# ========== REPORT CARDS (Enterprise service layer) ==========
+
+class ReportCardCreate(BaseModel):
+    academic_year_id: int
+    exam_id: int
+    template_id: Optional[int] = None
+    student_id: int
+    class_id: Optional[int] = None
+    section_id: Optional[int] = None
+    template_config: Optional[str] = None
+    student_data: Optional[str] = None
+    grades_data: Optional[str] = None
+    overall_grade: Optional[str] = None
+    overall_gpa: Optional[float] = None
+    overall_percentage: Optional[float] = None
+    total_marks_obtained: Optional[float] = None
+    total_marks_possible: Optional[float] = None
+    attendance_data: Optional[str] = None
+    remarks: Optional[str] = None
+    teacher_remark: Optional[str] = None
+    principal_remark: Optional[str] = None
+
+
+class ReportCardUpdate(BaseModel):
+    template_id: Optional[int] = None
+    class_id: Optional[int] = None
+    section_id: Optional[int] = None
+    template_config: Optional[str] = None
+    student_data: Optional[str] = None
+    grades_data: Optional[str] = None
+    overall_grade: Optional[str] = None
+    overall_gpa: Optional[float] = None
+    overall_percentage: Optional[float] = None
+    total_marks_obtained: Optional[float] = None
+    total_marks_possible: Optional[float] = None
+    attendance_data: Optional[str] = None
+    remarks: Optional[str] = None
+    teacher_remark: Optional[str] = None
+    principal_remark: Optional[str] = None
+    status: Optional[str] = None
+
+
+class BulkReportCardGenerate(BaseModel):
+    student_ids: Optional[List[int]] = None
+    class_id: Optional[int] = None
+    academic_year_id: int
+    exam_id: int
+    template_id: Optional[int] = None
+    publish: Optional[bool] = False
+
+
+class ReportCardSubjectCreate(BaseModel):
+    report_card_id: int
+    subject_id: int
+    examination_type_id: Optional[int] = None
+    marks_obtained: Optional[float] = None
+    marks_max: Optional[float] = None
+    percentage: Optional[float] = None
+    grade: Optional[str] = None
+    grade_point: Optional[float] = None
+    grade_scale_range_id: Optional[int] = None
+    remarks: Optional[str] = None
+    teacher_remark: Optional[str] = None
+    is_passing: Optional[bool] = None
+    credit_hours: Optional[float] = None
+    weightage: Optional[float] = None
+
+
+class ReportCardSubjectUpdate(BaseModel):
+    subject_id: Optional[int] = None
+    examination_type_id: Optional[int] = None
+    marks_obtained: Optional[float] = None
+    marks_max: Optional[float] = None
+    percentage: Optional[float] = None
+    grade: Optional[str] = None
+    grade_point: Optional[float] = None
+    grade_scale_range_id: Optional[int] = None
+    remarks: Optional[str] = None
+    teacher_remark: Optional[str] = None
+    is_passing: Optional[bool] = None
+    credit_hours: Optional[float] = None
+    weightage: Optional[float] = None

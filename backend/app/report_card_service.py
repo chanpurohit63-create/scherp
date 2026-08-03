@@ -9,7 +9,15 @@ from .audit import log_audit
 from .notification_service import NotificationService
 
 
-DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+DAYS_OF_WEEK = {
+    0: "Monday",
+    1: "Tuesday",
+    2: "Wednesday",
+    3: "Thursday",
+    4: "Friday",
+    5: "Saturday",
+    6: "Sunday",
+}
 
 
 def _get_school_id() -> Optional[int]:
@@ -976,4 +984,52 @@ def calculate_overall_grade(report_card_id: int, school_id: Optional[int] = None
             "overall_gpa": overall_gpa,
             "total_marks_obtained": total_marks_obtained,
             "total_marks_possible": total_marks_possible,
+        }
+
+
+def delete_report_card(report_card_id: int, current_user: models.User) -> bool:
+    sid = _get_school_id()
+    with Session(engine) as session:
+        report_card = session.get(models.ReportCard, report_card_id)
+        if not report_card or (sid is not None and report_card.school_id != sid):
+            return False
+        session.delete(report_card)
+        session.commit()
+        log_audit(
+            user_id=current_user.id,
+            school_id=sid,
+            action="delete",
+            resource="report_card",
+            resource_id=report_card_id,
+            details=f"Deleted report card for student {report_card.student_id}",
+        )
+        return True
+
+
+def get_report_card_by_verification_id(verification_id: str) -> Optional[models.ReportCard]:
+    with Session(engine) as session:
+        statement = select(models.ReportCard).where(models.ReportCard.verification_id == verification_id)
+        return session.exec(statement).first()
+
+
+def get_report_card_stats(school_id: Optional[int] = None) -> Dict[str, Any]:
+    sid = school_id or _get_school_id()
+    with Session(engine) as session:
+        statement = select(models.ReportCard).where(models.ReportCard.school_id == sid)
+        cards = session.exec(statement).all()
+        total = len(cards)
+        draft = sum(1 for c in cards if c.status == "draft")
+        generated = sum(1 for c in cards if c.status == "generated")
+        published = sum(1 for c in cards if c.status == "published")
+        archived = sum(1 for c in cards if c.status == "archived")
+        pass_count = sum(1 for c in cards if c.result_status == "PASS")
+        fail_count = sum(1 for c in cards if c.result_status == "FAIL")
+        return {
+            "total": total,
+            "draft": draft,
+            "generated": generated,
+            "published": published,
+            "archived": archived,
+            "pass_count": pass_count,
+            "fail_count": fail_count,
         }

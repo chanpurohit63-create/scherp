@@ -417,7 +417,7 @@ class ReportCardPDF(FPDF):
         )
 
         # Return PDF bytes
-        return self.output(dest="S").encode("latin-1", errors="replace")
+        return bytes(self.output(dest="S"))
 
 
 def generate_report_card_pdf(data: Dict) -> bytes:

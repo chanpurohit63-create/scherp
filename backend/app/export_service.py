@@ -9,7 +9,15 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
 from . import models, schemas
 
-DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+DAYS_OF_WEEK = {
+    0: "Monday",
+    1: "Tuesday",
+    2: "Wednesday",
+    3: "Thursday",
+    4: "Friday",
+    5: "Saturday",
+    6: "Sunday",
+}
 
 
 def generate_timetable_pdf(entries: List[models.Timetable]) -> bytes:

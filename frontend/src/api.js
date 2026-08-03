@@ -1,4 +1,4 @@
-export const BACKEND_URL = 'http://127.0.0.1:8001'
+export const BACKEND_URL = 'http://127.0.0.1:8000'
 
 export function getBackendUrl() {
   return BACKEND_URL
@@ -35,6 +35,19 @@ export async function createResource(token, path, body) {
   if (!response.ok) {
     const text = await response.text()
     throw new Error(text || 'Create failed')
+  }
+  return response.json()
+}
+
+export async function postResource(token, path, body = {}) {
+  const response = await fetch(`${BACKEND_URL}/api/${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders(token) },
+    body: JSON.stringify(body),
+  })
+  if (!response.ok) {
+    const text = await response.text()
+    throw new Error(text || 'POST failed')
   }
   return response.json()
 }
@@ -295,7 +308,7 @@ export async function getReportCard(token, id) {
 }
 
 export async function generateReportCard(token, data) {
-  return createResource(token, 'report-cards', data)
+  return createResource(token, 'report-cards/generate', data)
 }
 
 export async function updateReportCard(token, id, data) {
@@ -328,7 +341,7 @@ export async function getReportCardStats(token) {
 }
 
 export async function downloadReportCardPDF(token, id) {
-  return downloadFile(token, `report-cards/${id}/export/pdf`, `report_card_${id}.pdf`)
+  return downloadFile(token, `report-cards/${id}/pdf`, `report_card_${id}.pdf`)
 }
 
 export async function bulkDownloadReportCardsPDF(token, ids) {

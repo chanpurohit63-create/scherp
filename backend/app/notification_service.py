@@ -165,10 +165,14 @@ class NotificationService:
     ) -> Notification:
         """Create a notification in DB and send via WebSocket."""
         role = NotificationService._get_user_role(user_id)
+        with Session(engine) as session:
+            user = session.get(User, user_id)
+            school_id = user.school_id if user else None
         n = Notification(
             user_id=user_id, role=role, category=category, title=title,
             message=message, priority=priority, related_module=related_module,
-            related_record_id=related_record_id, sender_id=sender_id
+            related_record_id=related_record_id, sender_id=sender_id,
+            school_id=school_id,
         )
         with Session(engine) as session:
             session.add(n)

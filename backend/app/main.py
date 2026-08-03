@@ -6,8 +6,9 @@ import os
 from sqlmodel import SQLModel, Session, select, func
 from datetime import datetime
 from . import models, schemas, auth, crud
+from .tenant import get_current_school_id as _get_sid, set_current_school_id as _set_sid
 from .database import engine, init_db
-from .routers import users as users_router, erp as erp_router, notifications as notifications_router, superadmin as superadmin_router, timetable as timetable_router, report_card as report_card_router
+from .routers import users as users_router, erp as erp_router, notifications as notifications_router, superadmin as superadmin_router, timetable as timetable_router, report_cards as report_cards_router, report_card as enterprise_report_card_router
 from .notification_service import connection_manager
 
 app = FastAPI(title="School ERP - Backend (FastAPI)")
@@ -155,4 +156,5 @@ app.include_router(erp_router.router, prefix="/api")
 app.include_router(notifications_router.router, prefix="/api")
 app.include_router(superadmin_router.router, prefix="/api/superadmin")
 app.include_router(timetable_router.router, prefix="/api")
-app.include_router(report_card_router.router, prefix="/api")
+app.include_router(report_cards_router.router, prefix="/api")
+app.include_router(enterprise_report_card_router.router, prefix="/api")

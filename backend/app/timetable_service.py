@@ -12,7 +12,15 @@ from .audit import log_audit
 from .notification_service import NotificationService
 
 
-DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+DAYS_OF_WEEK = {
+    0: "Monday",
+    1: "Tuesday",
+    2: "Wednesday",
+    3: "Thursday",
+    4: "Friday",
+    5: "Saturday",
+    6: "Sunday",
+}
 
 
 def _get_school_id() -> Optional[int]:
@@ -779,7 +787,7 @@ def get_period_master(school_id: Optional[int] = None) -> List[models.PeriodMast
 
 
 def create_period_master(period_in: schemas.PeriodMasterCreate, current_user: models.User) -> models.PeriodMaster:
-    sid = _get_school_id()
+    sid = current_user.school_id
     period = models.PeriodMaster(
         school_id=sid,
         period_name=period_in.period_name,
