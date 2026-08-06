@@ -182,6 +182,71 @@ def get_unread_notifications(
         return {"notifications": notifications, "total": total}
 
 
+@router.delete("/notifications/read", status_code=204)
+async def delete_all_read_notifications(
+    current_user=Depends(auth.get_current_user),
+):
+    """Delete all read notifications."""
+    with Session(engine) as session:
+        notifications = session.exec(
+            select(models.Notification).where(
+                models.Notification.user_id == current_user.id,
+                models.Notification.is_read == True,
+            )
+        ).all()
+        for n in notifications:
+            session.delete(n)
+        session.commit()
+
+
+@router.get("/notifications/preferences", response_model=schemas.NotificationPreferenceRead)
+def get_notification_preferences(
+    current_user=Depends(auth.get_current_user),
+):
+    """Get notification preferences for current user."""
+    with Session(engine) as session:
+        prefs = session.exec(
+            select(models.NotificationPreference).where(
+                models.NotificationPreference.user_id == current_user.id
+            )
+        ).first()
+        
+        if not prefs:
+            # Create default preferences
+            prefs = models.NotificationPreference(user_id=current_user.id)
+            session.add(prefs)
+            session.commit()
+            session.refresh(prefs)
+        
+        return prefs
+
+
+@router.put("/notifications/preferences", response_model=schemas.NotificationPreferenceRead)
+def update_notification_preferences(
+    prefs_update: schemas.NotificationPreferenceCreate,
+    current_user=Depends(auth.get_current_user),
+):
+    """Update notification preferences."""
+    with Session(engine) as session:
+        prefs = session.exec(
+            select(models.NotificationPreference).where(
+                models.NotificationPreference.user_id == current_user.id
+            )
+        ).first()
+        
+        if not prefs:
+            prefs = models.NotificationPreference(user_id=current_user.id)
+        
+        update_data = prefs_update.dict(exclude_unset=True)
+        for k, v in update_data.items():
+            setattr(prefs, k, v)
+        
+        session.add(prefs)
+        session.commit()
+        session.refresh(prefs)
+        return prefs
+
+
 @router.get("/notifications/{notification_id}", response_model=schemas.NotificationRead)
 def get_notification(
     notification_id: int,
@@ -243,34 +308,6 @@ async def mark_notification_read(
     return notification
 
 
-@router.put("/notifications/read-all")
-async def mark_all_notifications_read(
-    current_user=Depends(auth.get_current_user),
-):
-    """Mark all unread notifications as read."""
-    with Session(engine) as session:
-        notifications = session.exec(
-            select(models.Notification).where(
-                models.Notification.user_id == current_user.id,
-                models.Notification.is_read == False,
-            )
-        ).all()
-        
-        for n in notifications:
-            n.is_read = True
-            session.add(n)
-        
-        session.commit()
-    
-    # Notify via WebSocket
-    await connection_manager.send_personal_message(current_user.id, {
-        "type": "notification.read_all",
-        "user_id": current_user.id,
-    })
-    
-    return {"message": "All notifications marked as read"}
-
-
 @router.delete("/notifications/{notification_id}", status_code=204)
 async def delete_notification(
     notification_id: int,
@@ -292,23 +329,6 @@ async def delete_notification(
         "type": "notification.deleted",
         "notification_id": notification_id,
     })
-
-
-@router.delete("/notifications/read", status_code=204)
-async def delete_all_read_notifications(
-    current_user=Depends(auth.get_current_user),
-):
-    """Delete all read notifications."""
-    with Session(engine) as session:
-        notifications = session.exec(
-            select(models.Notification).where(
-                models.Notification.user_id == current_user.id,
-                models.Notification.is_read == True,
-            )
-        ).all()
-        for n in notifications:
-            session.delete(n)
-        session.commit()
 
 
 @router.put("/notifications/{notification_id}/archive", response_model=schemas.NotificationRead)
@@ -366,54 +386,4 @@ async def pin_notification(
         session.commit()
         session.refresh(notification)
     return notification
-
-
-# Notification Preferences
-
-@router.get("/notifications/preferences", response_model=schemas.NotificationPreferenceRead)
-def get_notification_preferences(
-    current_user=Depends(auth.get_current_user),
-):
-    """Get notification preferences for current user."""
-    with Session(engine) as session:
-        prefs = session.exec(
-            select(models.NotificationPreference).where(
-                models.NotificationPreference.user_id == current_user.id
-            )
-        ).first()
-        
-        if not prefs:
-            # Create default preferences
-            prefs = models.NotificationPreference(user_id=current_user.id)
-            session.add(prefs)
-            session.commit()
-            session.refresh(prefs)
-        
-        return prefs
-
-
-@router.put("/notifications/preferences", response_model=schemas.NotificationPreferenceRead)
-def update_notification_preferences(
-    prefs_update: schemas.NotificationPreferenceCreate,
-    current_user=Depends(auth.get_current_user),
-):
-    """Update notification preferences."""
-    with Session(engine) as session:
-        prefs = session.exec(
-            select(models.NotificationPreference).where(
-                models.NotificationPreference.user_id == current_user.id
-            )
-        ).first()
-        
-        if not prefs:
-            prefs = models.NotificationPreference(user_id=current_user.id)
-        
-        update_data = prefs_update.dict(exclude_unset=True)
-        for k, v in update_data.items():
-            setattr(prefs, k, v)
-        
-        session.add(prefs)
-        session.commit()
-        session.refresh(prefs)
-        return prefs
 

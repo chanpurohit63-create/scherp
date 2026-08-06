@@ -94,33 +94,6 @@ def list_timetable(
     )
 
 
-@router.get("/timetable/{entry_id}", response_model=schemas.TimetableRead)
-def get_timetable(entry_id: int, current_user=Depends(auth.require_roles(*ALL_ADMIN_ROLES))):
-    entry = get_timetable_entry(entry_id)
-    if not entry:
-        raise HTTPException(status_code=404, detail="Timetable entry not found")
-    return entry
-
-
-@router.put("/timetable/{entry_id}", response_model=schemas.TimetableRead)
-def update_timetable(entry_id: int, timetable_update: schemas.TimetableUpdate, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
-    try:
-        entry = update_timetable_entry(entry_id, timetable_update, current_user)
-        if not entry:
-            raise HTTPException(status_code=404, detail="Timetable entry not found")
-        return entry
-    except ValueError as e:
-        raise HTTPException(status_code=409, detail=str(e))
-
-
-@router.delete("/timetable/{entry_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_timetable(entry_id: int, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
-    success = delete_timetable_entry(entry_id, current_user)
-    if not success:
-        raise HTTPException(status_code=404, detail="Timetable entry not found")
-    return {}
-
-
 # ========== TIMETABLE DUPLICATE & COPY ==========
 
 @router.post("/timetable/duplicate", response_model=dict)
@@ -542,3 +515,30 @@ async def notify_emergency_endpoint(
     from ..timetable_service import notify_emergency_schedule_update
     await notify_emergency_schedule_update(class_id)
     return {"notified": True, "class_id": class_id}
+
+
+@router.get("/timetable/{entry_id}", response_model=schemas.TimetableRead)
+def get_timetable(entry_id: int, current_user=Depends(auth.require_roles(*ALL_ADMIN_ROLES))):
+    entry = get_timetable_entry(entry_id)
+    if not entry:
+        raise HTTPException(status_code=404, detail="Timetable entry not found")
+    return entry
+
+
+@router.put("/timetable/{entry_id}", response_model=schemas.TimetableRead)
+def update_timetable(entry_id: int, timetable_update: schemas.TimetableUpdate, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
+    try:
+        entry = update_timetable_entry(entry_id, timetable_update, current_user)
+        if not entry:
+            raise HTTPException(status_code=404, detail="Timetable entry not found")
+        return entry
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+
+
+@router.delete("/timetable/{entry_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_timetable(entry_id: int, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
+    success = delete_timetable_entry(entry_id, current_user)
+    if not success:
+        raise HTTPException(status_code=404, detail="Timetable entry not found")
+    return {}
