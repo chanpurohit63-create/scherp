@@ -1,0 +1,227 @@
+"""End-to-end demo verification for School ERP - uses stdlib only."""
+import json, sys, urllib.request, urllib.parse
+from datetime import date, timedelta
+
+BASE = "http://127.0.0.1:8000"
+results = []
+PASSWORD = "admin123"
+
+def log(module, test, status, detail=""):
+    results.append({"module": module, "test": test, "status": status, "detail": str(detail)[:200]})
+    print(f"[{status}] {module} | {test}: {detail}")
+
+def _req(method, path, token=None, body=None, params=None):
+    url = f"{BASE}{path}"
+    if params:
+        qs = urllib.parse.urlencode({k: v for k, v in params.items() if v is not None})
+        url = f"{url}?{qs}"
+    data = None
+    headers = {}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    if body is not None:
+        data = json.dumps(body).encode()
+        headers["Content-Type"] = "application/json"
+    req = urllib.request.Request(url, data=data, headers=headers, method=method)
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            raw = resp.read()
+            try:
+                return resp.status, json.loads(raw)
+            except Exception:
+                return resp.status, raw.decode(errors="replace")
+    except urllib.error.HTTPError as e:
+        try:
+            return e.code, json.loads(e.read())
+        except Exception:
+            return e.code, e.read().decode(errors="replace")
+    except Exception as e:
+        return 0, str(e)
+
+def G(tok, path, params=None):
+    s, j = _req("GET", path, tok, params=params)
+    return type("R", (), {"status_code": s, "json": lambda: j, "text": str(j)})()
+
+def P(tok, path, j=None, params=None):
+    s, j = _req("POST", path, tok, j, params=params)
+    return type("R", (), {"status_code": s, "json": lambda: j, "text": str(j)})()
+
+def U(tok, path, j=None, params=None):
+    s, j = _req("PUT", path, tok, j, params=params)
+    return type("R", (), {"status_code": s, "json": lambda: j, "text": str(j)})()
+
+def D(tok, path, params=None):
+    s, j = _req("DELETE", path, tok, params=params)
+    return type("R", (), {"status_code": s, "json": lambda: j, "text": str(j)})()
+
+def _r(status, j):
+    return type("R", (), {"status_code": status, "json": lambda: j, "text": str(j)})()
+
+def login(email, pw=PASSWORD):
+    try:
+        data = urllib.parse.urlencode({"username": email, "password": pw}).encode()
+        req = urllib.request.Request(f"{BASE}/auth/token", data=data, method="POST")
+        req.add_header("Content-Type", "application/x-www-form-urlencoded")
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            j = json.loads(resp.read())
+            return j.get("access_token")
+    except Exception as e:
+        log("AUTH", f"Login {email}", "FAIL", str(e))
+    return None
+
+def check(module, test, resp, ok_codes, detail=""):
+    ok = resp.status_code in ok_codes
+    log(module, test, "PASS" if ok else "FAIL", f"{resp.status_code} {detail} {resp.text if not ok else ''}".strip()[:200])
+    return ok
+
+# ============ 1. SUPER ADMIN ============
+sa_token = login("admin@school.local")
+log("SuperAdmin", "Login", "PASS" if sa_token else "FAIL")
+
+if sa_token:
+    r = G(sa_token, "/api/superadmin/schools", {"skip": 0, "limit": 50})
+    schools = r.json() if r.status_code == 200 and isinstance(r.json(), list) else []
+    check("SuperAdmin", "List Schools", r, [200], f"{len(schools)} schools")
+    r = G(sa_token, "/api/superadmin/platform/dashboard")
+    check("SuperAdmin", "Platform Dashboard", r, [200])
+    r = G(sa_token, "/api/superadmin/audit-logs", {"skip": 0, "limit": 5})
+    check("SuperAdmin", "Audit Logs", r, [200])
+    r = G(sa_token, "/api/superadmin/subscriptions/plans")
+    check("SuperAdmin", "Subscription Plans", r, [200])
+    sid = schools[0]["id"] if schools else None
+    if not sid:
+        r = P(sa_token, "/api/superadmin/schools", {"school_name": f"Demo School {date.today().isoformat()}", "school_code": f"DEMO{date.today().strftime('%m%d')}", "email": "demo@school.edu", "subscription_plan": "premium"})
+        if r.status_code in (200, 201):
+            sid = r.json().get("id")
+    check("SuperAdmin", "School Read/Find", _r(200 if sid else 404, {}), [200], f"sid={sid}")
+    if sid:
+        r = G(sa_token, f"/api/superadmin/schools/{sid}")
+        check("SuperAdmin", "School Detail", r, [200])
+        r = G(sa_token, f"/api/superadmin/schools/{sid}/statistics")
+        check("SuperAdmin", "School Stats", r, [200])
+
+# ============ 2. SCHOOL ADMIN (school 1) ============
+sa_t = login("schooladmin@default.school")
+log("SchoolAdmin", "Login", "PASS" if sa_t else "FAIL")
+
+if sa_t:
+    r = G(sa_t, "/users/me")
+    check("SchoolAdmin", "Profile", r, [200])
+    r = G(sa_t, "/api/dashboard/summary")
+    check("SchoolAdmin", "Dashboard Summary", r, [200])
+    r = G(sa_t, "/api/settings")
+    check("SchoolAdmin", "Settings Get", r, [200])
+
+    ay_id = None
+    r = P(sa_t, "/api/academic-years", {"name": "2026-2027 Test", "start_date": "2026-06-01", "end_date": "2027-05-31", "is_active": True})
+    check("SchoolAdmin", "AY Create", r, [200, 201])
+    if r.status_code in (200, 201):
+        ay_id = r.json().get("id")
+        r = G(sa_t, f"/api/academic-years/{ay_id}")
+        check("SchoolAdmin", "AY Read", r, [200])
+        r = U(sa_t, f"/api/academic-years/{ay_id}", {"name": "2026-2027 Updated"})
+        check("SchoolAdmin", "AY Update", r, [200])
+        r = D(sa_t, f"/api/academic-years/{ay_id}")
+        check("SchoolAdmin", "AY Delete", r, [200, 204])
+
+    cls_id = None
+    r = P(sa_t, "/api/classes", {"name": "Demo Class", "class_code": "DC01"})
+    check("SchoolAdmin", "Class Create", r, [200, 201])
+    if r.status_code in (200, 201):
+        cls_id = r.json().get("id")
+        r = G(sa_t, f"/api/classes/{cls_id}")
+        check("SchoolAdmin", "Class Read", r, [200])
+        r = U(sa_t, f"/api/classes/{cls_id}", {"name": "Demo Class Renamed"})
+        check("SchoolAdmin", "Class Update", r, [200])
+        r = D(sa_t, f"/api/classes/{cls_id}")
+        check("SchoolAdmin", "Class Delete", r, [200, 204])
+
+    for mod, path in [("Students", "/api/students"), ("Teachers", "/api/teachers"), ("Parents", "/api/parents"),
+                      ("Subjects", "/api/subjects"), ("Sections", "/api/sections"), ("Exams", "/api/exams"),
+                      ("ExamResults", "/api/exam-results"), ("Enrollments", "/api/enrollments"),
+                      ("Fees", "/api/fee-structures"), ("Payments", "/api/payments"), ("Notices", "/api/notices"),
+                      ("Events", "/api/events"), ("Certificates", "/api/certificates"),
+                      ("Attendances", "/api/attendances"), ("Homework", "/api/homeworks"),
+                      ("Rooms", "/api/rooms"), ("Timetable", "/api/timetable")]:
+        r = G(sa_t, path, {"skip": 0, "limit": 20})
+        check("SchoolAdmin", f"{mod} List", r, [200])
+
+# ============ 3. TEACHER (school 2) ============
+t_tok = login("teacher1@testalpha.edu")
+log("Teacher", "Login", "PASS" if t_tok else "FAIL")
+
+if t_tok:
+    r = G(t_tok, "/users/me")
+    check("Teacher", "Profile", r, [200])
+    for mod, path in [("Dashboard", "/api/portal/teacher/dashboard"), ("Classes", "/api/portal/teacher/classes"),
+                      ("Students", "/api/portal/teacher/students"), ("Exams", "/api/portal/teacher/exams"),
+                      ("Homework", "/api/portal/teacher/homework"), ("Notices", "/api/portal/teacher/notices"),
+                      ("Calendar", "/api/portal/teacher/calendar"), ("Messages", "/api/portal/teacher/messages")]:
+        r = G(t_tok, path)
+        check("Teacher", f"{mod} Portal", r, [200])
+
+# ============ 4. STUDENT (school 2) ============
+st_tok = login("student_stu001@testalpha.edu")
+log("Student", "Login", "PASS" if st_tok else "FAIL")
+
+if st_tok:
+    r = G(st_tok, "/users/me")
+    check("Student", "Profile", r, [200])
+    for mod, path in [("Dashboard", "/api/portal/student/dashboard"), ("Attendance", "/api/portal/student/attendance"),
+                      ("Homework", "/api/portal/student/homework"), ("Exams", "/api/portal/student/exams"),
+                      ("Fees", "/api/portal/student/fees"), ("Notices", "/api/portal/student/notices"),
+                      ("Calendar", "/api/portal/student/calendar"), ("Documents", "/api/portal/student/documents"),
+                      ("Messages", "/api/portal/student/messages")]:
+        r = G(st_tok, path)
+        check("Student", f"{mod} Portal", r, [200])
+
+# ============ 5. PARENT (school 2) ============
+p_tok = login("john.anderson@email.com")
+log("Parent", "Login", "PASS" if p_tok else "FAIL")
+
+if p_tok:
+    r = G(p_tok, "/users/me")
+    check("Parent", "Profile", r, [200])
+    r = G(p_tok, "/api/portal/parent/dashboard")
+    check("Parent", "Dashboard", r, [200])
+    r = G(p_tok, "/api/portal/parent/children")
+    check("Parent", "Children", r, [200])
+    for mod, path in [("Attendance", "/api/portal/parent/attendance"), ("Homework", "/api/portal/parent/homework"),
+                      ("Exams", "/api/portal/parent/exams"), ("Fees", "/api/portal/parent/fees"),
+                      ("Notices", "/api/portal/parent/notices"), ("Calendar", "/api/portal/parent/calendar"),
+                      ("Messages", "/api/portal/parent/messages")]:
+        r = G(p_tok, path)
+        check("Parent", f"{mod} Portal", r, [200])
+
+# ============ 6. NOTIFICATIONS ============
+if sa_token:
+    r = G(sa_token, "/api/notifications/unread")
+    check("Notifications", "Unread", r, [200])
+
+# ============ 7. ROLE-BASED ACCESS CONTROL ============
+if sa_t:
+    r = G(sa_t, "/api/superadmin/schools")
+    log("RBAC", "SchoolAdmin->SuperAdmin blocked", "PASS" if r.status_code in (403, 404) else "FAIL", f"{r.status_code}")
+    if st_tok:
+        r = G(st_tok, "/api/students")
+        log("RBAC", "Student->Admin blocked", "PASS" if r.status_code in (403, 404) else "FAIL", f"{r.status_code}")
+    if t_tok:
+        r = P(t_tok, "/api/parents", {"phone": "555", "address": "x", "school_id": 2})
+        log("RBAC", "Teacher->ParentCreate blocked", "PASS" if r.status_code in (403, 404) else "FAIL", f"{r.status_code}")
+
+# ============ 8. REPORT CARDS ============
+if sa_t:
+    r = G(sa_t, "/api/report-cards", {"skip": 0, "limit": 10})
+    check("ReportCards", "List", r, [200])
+
+# ============ SUMMARY ============
+total = len(results)
+passed = sum(1 for r in results if r["status"] == "PASS")
+failed = sum(1 for r in results if r["status"] == "FAIL")
+print(f"\n{'='*60}")
+print(f"TOTAL: {total} | PASS: {passed} | FAIL: {failed}")
+print(f"{'='*60}")
+
+with open("demo_verification_results.json", "w") as f:
+    json.dump(results, f, indent=2)
+print("Results saved to demo_verification_results.json")

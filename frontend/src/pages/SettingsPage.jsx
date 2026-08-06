@@ -167,7 +167,12 @@ export default function SettingsPage() {
   const resolveAssetUrl = (path) => {
     if (!path) return null
     if (path.startsWith('data:')) return path
-    // Convert relative filesystem path to accessible URL
+    // If path already starts with /static/, use it directly
+    if (path.startsWith('/static/') || path.startsWith('static/')) {
+      const cleanPath = path.startsWith('/') ? path : `/${path}`
+      return `${BACKEND_URL}${cleanPath}`
+    }
+    // Otherwise construct path from school_id and filename
     const filename = path.split(/[\\/]/).pop()
     return `${BACKEND_URL}/static/uploads/school_${auth.profile?.school_id || ''}/${filename}`
   }

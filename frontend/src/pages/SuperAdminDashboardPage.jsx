@@ -16,24 +16,24 @@ export default function SuperAdminDashboardPage() {
 
   useEffect(() => {
     loadDashboard()
+    loadSchools()
   }, [])
 
   const loadDashboard = async () => {
     try {
-      const d = await listResources(auth.token, 'superadmin/platform/dashboard')
-      setData(d)
-      // Also fetch schools to calculate renewals
-      try {
-        const schoolsData = await listResources(auth.token, 'superadmin/schools?skip=0&limit=1000')
-        setSchools(schoolsData)
-      } catch (err) {
-        console.error('Failed to load schools for renewals:', err)
-      }
+      const dashboardData = await listResources(auth.token, 'superadmin/platform/dashboard', 'skip=0&limit=100')
+      setData(dashboardData)
     } catch (err) {
       console.error(err)
-      setError('Failed to load dashboard data')
-    } finally {
-      setLoading(false)
+    }
+  }
+
+  const loadSchools = async () => {
+    try {
+      const data = await listResources(auth.token, 'superadmin/schools', 'skip=0&limit=1000')
+      setSchools(data)
+    } catch (err) {
+      console.error(err)
     }
   }
 

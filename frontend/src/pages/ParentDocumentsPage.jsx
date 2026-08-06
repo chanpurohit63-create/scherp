@@ -27,7 +27,7 @@ export default function ParentDocumentsPage() {
   }
 
   const handleDownload = (doc) => {
-    downloadFile(auth.token, `portal/student/documents/${doc.id}/download`, doc.name)
+    downloadFile(auth.token, `portal/parent/children/${activeChild.student_id}/documents/${doc.id}/download`, doc.name)
   }
 
   if (!activeChild) {

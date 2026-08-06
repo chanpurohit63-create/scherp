@@ -28,14 +28,20 @@ from ..report_card_service import (
     list_grade_scales,
     get_grade_scale,
     update_grade_scale,
+    delete_grade_scale,
     create_grade_scale_range,
     list_grade_scale_ranges,
+    update_grade_scale_range,
+    delete_grade_scale_range,
     create_gpa_engine_config,
     list_gpa_engine_configs,
     get_gpa_engine_config,
     update_gpa_engine_config,
+    delete_gpa_engine_config,
     create_gpa_grade_mapping,
     list_gpa_grade_mappings,
+    update_gpa_grade_mapping,
+    delete_gpa_grade_mapping,
     create_subject_category,
     list_subject_categories,
     update_subject_category,
@@ -223,6 +229,14 @@ def update_grade_scale(grade_scale_id: int, grade_scale_update: schemas.GradeSca
     return grade_scale
 
 
+@router.delete("/grade-scales/{grade_scale_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_grade_scale(grade_scale_id: int, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
+    success = delete_grade_scale(grade_scale_id, current_user)
+    if not success:
+        raise HTTPException(status_code=404, detail="Grade scale not found")
+    return {}
+
+
 # ========== GRADE SCALE RANGES ==========
 
 @router.post("/grade-scales/{grade_scale_id}/ranges", response_model=schemas.GradeScaleRangeRead, status_code=status.HTTP_201_CREATED)
@@ -241,6 +255,14 @@ def update_grade_scale_range(range_id: int, range_update: schemas.GradeScaleRang
     if not grade_range:
         raise HTTPException(status_code=404, detail="Grade range not found")
     return grade_range
+
+
+@router.delete("/grade-scale-ranges/{range_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_grade_scale_range(range_id: int, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
+    success = delete_grade_scale_range(range_id, current_user)
+    if not success:
+        raise HTTPException(status_code=404, detail="Grade range not found")
+    return {}
 
 
 # ========== GPA ENGINE ==========
@@ -263,6 +285,14 @@ def update_gpa_engine(gpa_engine_id: int, gpa_update: schemas.GpaEngineConfigUpd
     return gpa_engine
 
 
+@router.delete("/gpa-engines/{gpa_engine_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_gpa_engine(gpa_engine_id: int, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
+    success = delete_gpa_engine_config(gpa_engine_id, current_user)
+    if not success:
+        raise HTTPException(status_code=404, detail="GPA engine not found")
+    return {}
+
+
 # ========== GPA GRADE MAPPINGS ==========
 
 @router.post("/gpa-engines/{gpa_engine_id}/mappings", response_model=schemas.GpaGradeMappingRead, status_code=status.HTTP_201_CREATED)
@@ -281,6 +311,14 @@ def update_gpa_mapping(mapping_id: int, mapping_update: schemas.GpaGradeMappingU
     if not mapping:
         raise HTTPException(status_code=404, detail="GPA mapping not found")
     return mapping
+
+
+@router.delete("/gpa-mappings/{mapping_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_gpa_mapping(mapping_id: int, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
+    success = delete_gpa_grade_mapping(mapping_id, current_user)
+    if not success:
+        raise HTTPException(status_code=404, detail="GPA mapping not found")
+    return {}
 
 
 # ========== SUBJECT CATEGORIES ==========

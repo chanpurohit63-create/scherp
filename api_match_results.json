@@ -1,0 +1,918 @@
+{
+  "backend_routes_total": 373,
+  "frontend_calls_total": 310,
+  "unmatched_frontend": [
+    {
+      "path": "grade-scale-ranges",
+      "file": "frontend\\src\\api.js",
+      "line": 237
+    },
+    {
+      "path": "gpa-mappings",
+      "file": "frontend\\src\\api.js",
+      "line": 267
+    },
+    {
+      "path": "portal/student/documents/${doc.id}/download",
+      "file": "frontend\\src\\pages\\ParentDocumentsPage.jsx",
+      "line": 30
+    },
+    {
+      "path": "portal/student/documents/${doc.id}/download",
+      "file": "frontend\\src\\pages\\ParentDocumentsPage.jsx",
+      "line": 30
+    },
+    {
+      "path": "superadmin/audit-logs${query ? ",
+      "file": "frontend\\src\\pages\\SuperAdminAuditLogsPage.jsx",
+      "line": 20
+    },
+    {
+      "path": "superadmin/audit-logs${query ? '?' + query : ''}",
+      "file": "frontend\\src\\pages\\SuperAdminAuditLogsPage.jsx",
+      "line": 20
+    },
+    {
+      "path": "superadmin/platform/dashboard",
+      "file": "frontend\\src\\pages\\SuperAdminDashboardPage.jsx",
+      "line": 23
+    },
+    {
+      "path": "superadmin/schools?skip=0&limit=1000",
+      "file": "frontend\\src\\pages\\SuperAdminDashboardPage.jsx",
+      "line": 27
+    },
+    {
+      "path": "superadmin/platform/dashboard",
+      "file": "frontend\\src\\pages\\SuperAdminPaymentsPage.jsx",
+      "line": 21
+    },
+    {
+      "path": "superadmin/schools?skip=0&limit=1000",
+      "file": "frontend\\src\\pages\\SuperAdminPaymentsPage.jsx",
+      "line": 22
+    },
+    {
+      "path": "superadmin/schools",
+      "file": "frontend\\src\\pages\\SuperAdminPaymentsPage.jsx",
+      "line": 31
+    },
+    {
+      "path": "superadmin/schools?skip=0&limit=1000${query ? ",
+      "file": "frontend\\src\\pages\\SuperAdminSchoolsPage.jsx",
+      "line": 35
+    },
+    {
+      "path": "superadmin/schools?skip=0&limit=1000${query ? '&' + query : ''}",
+      "file": "frontend\\src\\pages\\SuperAdminSchoolsPage.jsx",
+      "line": 35
+    },
+    {
+      "path": "superadmin/schools",
+      "file": "frontend\\src\\pages\\SuperAdminSchoolsPage.jsx",
+      "line": 52
+    },
+    {
+      "path": "superadmin/schools/${schoolId}/${action}",
+      "file": "frontend\\src\\pages\\SuperAdminSchoolsPage.jsx",
+      "line": 94
+    },
+    {
+      "path": "superadmin/schools/${schoolId}/${action}",
+      "file": "frontend\\src\\pages\\SuperAdminSchoolsPage.jsx",
+      "line": 94
+    },
+    {
+      "path": "superadmin/schools/${schoolId}",
+      "file": "frontend\\src\\pages\\SuperAdminSchoolsPage.jsx",
+      "line": 96
+    },
+    {
+      "path": "superadmin/schools/${schoolId}",
+      "file": "frontend\\src\\pages\\SuperAdminSchoolsPage.jsx",
+      "line": 96
+    },
+    {
+      "path": "superadmin/schools",
+      "file": "frontend\\src\\pages\\SuperAdminSchoolsPage.jsx",
+      "line": 127
+    },
+    {
+      "path": "superadmin/schools",
+      "file": "frontend\\src\\pages\\SuperAdminSchoolsPage.jsx",
+      "line": 145
+    },
+    {
+      "path": "superadmin/schools?skip=0&limit=1000",
+      "file": "frontend\\src\\pages\\SuperAdminSubscriptionsPage.jsx",
+      "line": 27
+    },
+    {
+      "path": "superadmin/platform/dashboard",
+      "file": "frontend\\src\\pages\\SuperAdminSubscriptionsPage.jsx",
+      "line": 28
+    },
+    {
+      "path": "portal/teacher/homework${classId ? ",
+      "file": "frontend\\src\\pages\\TeacherHomeworkPage.jsx",
+      "line": 28
+    },
+    {
+      "path": "portal/teacher/homework${classId ? ",
+      "file": "frontend\\src\\pages\\TeacherHomeworkPage.jsx",
+      "line": 28
+    },
+    {
+      "path": "portal/teacher/messages${search ? ",
+      "file": "frontend\\src\\pages\\TeacherMessagesPage.jsx",
+      "line": 20
+    },
+    {
+      "path": "portal/teacher/messages${search ? ",
+      "file": "frontend\\src\\pages\\TeacherMessagesPage.jsx",
+      "line": 20
+    }
+  ],
+  "unused_backend_routes": [
+    {
+      "method": "GET",
+      "path": "/parents/{parent_id}"
+    },
+    {
+      "method": "GET",
+      "path": "/parents/{parent_id}/profile"
+    },
+    {
+      "method": "DELETE",
+      "path": "/parents/{parent_id}"
+    },
+    {
+      "method": "GET",
+      "path": "/teachers/{teacher_id}"
+    },
+    {
+      "method": "GET",
+      "path": "/teachers/{teacher_id}/profile"
+    },
+    {
+      "method": "PUT",
+      "path": "/teachers/{teacher_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/teachers/{teacher_id}"
+    },
+    {
+      "method": "GET",
+      "path": "/students/{student_id}"
+    },
+    {
+      "method": "GET",
+      "path": "/students/{student_id}/profile"
+    },
+    {
+      "method": "PUT",
+      "path": "/students/{student_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/students/{student_id}"
+    },
+    {
+      "method": "POST",
+      "path": "/students/{student_id}/promote"
+    },
+    {
+      "method": "POST",
+      "path": "/students/{student_id}/transfer-certificate"
+    },
+    {
+      "method": "GET",
+      "path": "/students/{student_id}/documents"
+    },
+    {
+      "method": "POST",
+      "path": "/students/{student_id}/documents"
+    },
+    {
+      "method": "POST",
+      "path": "/students/{student_id}/photo"
+    },
+    {
+      "method": "GET",
+      "path": "/homework-submissions/{submission_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/homework-submissions/{submission_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/homework-submissions/{submission_id}"
+    },
+    {
+      "method": "POST",
+      "path": "/teacher-attendances"
+    },
+    {
+      "method": "GET",
+      "path": "/teacher-attendances"
+    },
+    {
+      "method": "GET",
+      "path": "/teacher-attendances/{attendance_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/teacher-attendances/{attendance_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/teacher-attendances/{attendance_id}"
+    },
+    {
+      "method": "GET",
+      "path": "/academic-years/{year_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/academic-years/{year_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/academic-years/{year_id}"
+    },
+    {
+      "method": "GET",
+      "path": "/classes/{class_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/classes/{class_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/classes/{class_id}"
+    },
+    {
+      "method": "GET",
+      "path": "/sections/{section_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/sections/{section_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/sections/{section_id}"
+    },
+    {
+      "method": "GET",
+      "path": "/subjects/{subject_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/subjects/{subject_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/subjects/{subject_id}"
+    },
+    {
+      "method": "GET",
+      "path": "/rooms/{room_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/rooms/{room_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/rooms/{room_id}"
+    },
+    {
+      "method": "GET",
+      "path": "/subject-allocations/{allocation_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/subject-allocations/{allocation_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/subject-allocations/{allocation_id}"
+    },
+    {
+      "method": "GET",
+      "path": "/enrollments/{enrollment_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/enrollments/{enrollment_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/enrollments/{enrollment_id}"
+    },
+    {
+      "method": "GET",
+      "path": "/attendances/{attendance_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/attendances/{attendance_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/attendances/{attendance_id}"
+    },
+    {
+      "method": "GET",
+      "path": "/homeworks/{homework_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/homeworks/{homework_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/homeworks/{homework_id}"
+    },
+    {
+      "method": "GET",
+      "path": "/exams/{exam_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/exams/{exam_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/exams/{exam_id}"
+    },
+    {
+      "method": "GET",
+      "path": "/exam-results/{result_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/exam-results/{result_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/exam-results/{result_id}"
+    },
+    {
+      "method": "GET",
+      "path": "/fee-structures/{fee_structure_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/fee-structures/{fee_structure_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/fee-structures/{fee_structure_id}"
+    },
+    {
+      "method": "GET",
+      "path": "/fee-assignments/{assignment_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/fee-assignments/{assignment_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/fee-assignments/{assignment_id}"
+    },
+    {
+      "method": "GET",
+      "path": "/payments/{payment_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/payments/{payment_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/payments/{payment_id}"
+    },
+    {
+      "method": "GET",
+      "path": "/notices/{notice_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/notices/{notice_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/notices/{notice_id}"
+    },
+    {
+      "method": "POST",
+      "path": "/messages"
+    },
+    {
+      "method": "GET",
+      "path": "/messages"
+    },
+    {
+      "method": "GET",
+      "path": "/messages/{message_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/messages/{message_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/messages/{message_id}"
+    },
+    {
+      "method": "GET",
+      "path": "/events/{event_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/events/{event_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/events/{event_id}"
+    },
+    {
+      "method": "POST",
+      "path": "/documents"
+    },
+    {
+      "method": "GET",
+      "path": "/documents"
+    },
+    {
+      "method": "GET",
+      "path": "/documents/{document_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/documents/{document_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/documents/{document_id}"
+    },
+    {
+      "method": "GET",
+      "path": "/reports/students"
+    },
+    {
+      "method": "GET",
+      "path": "/reports/attendance"
+    },
+    {
+      "method": "GET",
+      "path": "/reports/teachers"
+    },
+    {
+      "method": "GET",
+      "path": "/reports/fees"
+    },
+    {
+      "method": "GET",
+      "path": "/reports/exams"
+    },
+    {
+      "method": "GET",
+      "path": "/certificates/{certificate_id}/download"
+    },
+    {
+      "method": "GET",
+      "path": "/certificates/{certificate_id}/preview"
+    },
+    {
+      "method": "GET",
+      "path": "/notices/filter"
+    },
+    {
+      "method": "GET",
+      "path": "/portal/parent/children/{student_id}/profile"
+    },
+    {
+      "method": "POST",
+      "path": "/portal/teacher/change-password"
+    },
+    {
+      "method": "POST",
+      "path": "/portal/teacher/attendance/bulk"
+    },
+    {
+      "method": "PUT",
+      "path": "/portal/teacher/attendance/{attendance_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/portal/teacher/homework/{homework_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/portal/teacher/homework/{homework_id}"
+    },
+    {
+      "method": "GET",
+      "path": "/portal/teacher/homework/{homework_id}/submissions"
+    },
+    {
+      "method": "PUT",
+      "path": "/portal/teacher/homework/{homework_id}/submissions/{submission_id}/grade"
+    },
+    {
+      "method": "PUT",
+      "path": "/portal/teacher/exams/{exam_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/portal/teacher/exams/{exam_id}"
+    },
+    {
+      "method": "POST",
+      "path": "/portal/teacher/exams/{exam_id}/marks"
+    },
+    {
+      "method": "POST",
+      "path": "/portal/teacher/exams/{exam_id}/marks/bulk"
+    },
+    {
+      "method": "PUT",
+      "path": "/portal/teacher/exams/{exam_id}/marks/{result_id}"
+    },
+    {
+      "method": "GET",
+      "path": "/portal/teacher/exams/{exam_id}/marks"
+    },
+    {
+      "method": "POST",
+      "path": "/portal/teacher/exams/{exam_id}/publish"
+    },
+    {
+      "method": "GET",
+      "path": "/portal/teacher/students/{student_id}/profile"
+    },
+    {
+      "method": "GET",
+      "path": "/portal/teacher/students/{student_id}/attendance"
+    },
+    {
+      "method": "GET",
+      "path": "/portal/teacher/students/{student_id}/homework"
+    },
+    {
+      "method": "GET",
+      "path": "/portal/teacher/students/{student_id}/performance"
+    },
+    {
+      "method": "GET",
+      "path": "/audit-logs"
+    },
+    {
+      "method": "GET",
+      "path": "/analytics/overview"
+    },
+    {
+      "method": "GET",
+      "path": "/search"
+    },
+    {
+      "method": "GET",
+      "path": "/notifications/unread"
+    },
+    {
+      "method": "PUT",
+      "path": "/notifications/{notification_id}/read"
+    },
+    {
+      "method": "PUT",
+      "path": "/notifications/{notification_id}/archive"
+    },
+    {
+      "method": "PUT",
+      "path": "/notifications/{notification_id}/restore"
+    },
+    {
+      "method": "PUT",
+      "path": "/notifications/{notification_id}/pin"
+    },
+    {
+      "method": "GET",
+      "path": "/report-card/templates/{template_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/report-card/templates/{template_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/report-card/components/{component_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/report-card/components/{component_id}"
+    },
+    {
+      "method": "GET",
+      "path": "/examination-types/{exam_type_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/examination-types/{exam_type_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/examination-types/{exam_type_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/grade-scales/{grade_scale_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/grade-scale-ranges/{range_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/gpa-engines/{gpa_engine_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/gpa-mappings/{mapping_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/subject-categories/{category_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/subject-categories/{category_id}"
+    },
+    {
+      "method": "POST",
+      "path": "/report-cards/{report_card_id}/grades"
+    },
+    {
+      "method": "GET",
+      "path": "/report-cards/{report_card_id}/grades"
+    },
+    {
+      "method": "PUT",
+      "path": "/report-card-grades/{grade_id}"
+    },
+    {
+      "method": "POST",
+      "path": "/report-cards/{report_card_id}/calculate-overall"
+    },
+    {
+      "method": "GET",
+      "path": "/report-cards/{report_card_id}/print"
+    },
+    {
+      "method": "GET",
+      "path": "/report-cards/{report_card_id}/export/pdf"
+    },
+    {
+      "method": "GET",
+      "path": "/report-cards/verify/{verification_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/grading-rules/{rule_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/grading-rules/{rule_id}"
+    },
+    {
+      "method": "POST",
+      "path": "/report-cards/regenerate/{report_card_id}"
+    },
+    {
+      "method": "GET",
+      "path": "/report-cards/{report_card_id}/preview"
+    },
+    {
+      "method": "GET",
+      "path": "/report-cards/verify/{verification_id}"
+    },
+    {
+      "method": "POST",
+      "path": "/schools"
+    },
+    {
+      "method": "GET",
+      "path": "/schools"
+    },
+    {
+      "method": "GET",
+      "path": "/schools/count"
+    },
+    {
+      "method": "GET",
+      "path": "/schools/{school_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/schools/{school_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/schools/{school_id}"
+    },
+    {
+      "method": "POST",
+      "path": "/schools/{school_id}/activate"
+    },
+    {
+      "method": "POST",
+      "path": "/schools/{school_id}/suspend"
+    },
+    {
+      "method": "GET",
+      "path": "/subscriptions/plans"
+    },
+    {
+      "method": "PUT",
+      "path": "/schools/{school_id}/subscription"
+    },
+    {
+      "method": "GET",
+      "path": "/schools/{school_id}/statistics"
+    },
+    {
+      "method": "GET",
+      "path": "/platform/dashboard"
+    },
+    {
+      "method": "GET",
+      "path": "/platform/analytics"
+    },
+    {
+      "method": "GET",
+      "path": "/audit-logs"
+    },
+    {
+      "method": "POST",
+      "path": "/schools/{school_id}/reset-admin-password"
+    },
+    {
+      "method": "POST",
+      "path": "/timetable/duplicate"
+    },
+    {
+      "method": "POST",
+      "path": "/timetable/copy-section"
+    },
+    {
+      "method": "POST",
+      "path": "/timetable/generate"
+    },
+    {
+      "method": "POST",
+      "path": "/timetable/check-conflicts"
+    },
+    {
+      "method": "PUT",
+      "path": "/timetable/conflicts/{conflict_id}/resolve"
+    },
+    {
+      "method": "GET",
+      "path": "/rooms/{room_id}/timetable"
+    },
+    {
+      "method": "PUT",
+      "path": "/periods/{period_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/periods/{period_id}"
+    },
+    {
+      "method": "GET",
+      "path": "/rooms/allocation"
+    },
+    {
+      "method": "GET",
+      "path": "/timetable/export/pdf"
+    },
+    {
+      "method": "GET",
+      "path": "/timetable/export/excel"
+    },
+    {
+      "method": "GET",
+      "path": "/timetable/export/csv"
+    },
+    {
+      "method": "GET",
+      "path": "/timetable/print"
+    },
+    {
+      "method": "POST",
+      "path": "/timetable/bulk-import"
+    },
+    {
+      "method": "PUT",
+      "path": "/timetable/bulk-update"
+    },
+    {
+      "method": "DELETE",
+      "path": "/timetable/bulk-delete"
+    },
+    {
+      "method": "POST",
+      "path": "/timetable/publish"
+    },
+    {
+      "method": "POST",
+      "path": "/timetable/unpublish"
+    },
+    {
+      "method": "POST",
+      "path": "/timetable/regenerate"
+    },
+    {
+      "method": "GET",
+      "path": "/timetable/reports/teacher-workload"
+    },
+    {
+      "method": "GET",
+      "path": "/timetable/reports/room-occupancy"
+    },
+    {
+      "method": "GET",
+      "path": "/timetable/reports/class/{class_id}"
+    },
+    {
+      "method": "GET",
+      "path": "/timetable/reports/subject-distribution"
+    },
+    {
+      "method": "GET",
+      "path": "/timetable/reports/period-analysis"
+    },
+    {
+      "method": "POST",
+      "path": "/timetable/notify/published"
+    },
+    {
+      "method": "POST",
+      "path": "/timetable/notify/changed"
+    },
+    {
+      "method": "POST",
+      "path": "/timetable/notify/room-changed"
+    },
+    {
+      "method": "POST",
+      "path": "/timetable/notify/emergency"
+    },
+    {
+      "method": "GET",
+      "path": "/users/{user_id}"
+    },
+    {
+      "method": "PUT",
+      "path": "/users/{user_id}"
+    },
+    {
+      "method": "DELETE",
+      "path": "/users/{user_id}"
+    },
+    {
+      "method": "POST",
+      "path": "/users/{user_id}/reset-password"
+    },
+    {
+      "method": "POST",
+      "path": "/profile/change-password"
+    },
+    {
+      "method": "POST",
+      "path": "/roles"
+    },
+    {
+      "method": "GET",
+      "path": "/roles"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/register"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/token"
+    },
+    {
+      "method": "GET",
+      "path": "/users/me"
+    }
+  ]
+}

@@ -1,7 +1,8 @@
-export const BACKEND_URL = 'http://127.0.0.1:8000'
+const isDevelopment = import.meta.env.DEV || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+export const BACKEND_URL = isDevelopment ? '' : 'http://127.0.0.1:8000'
 
 export function getBackendUrl() {
-  return BACKEND_URL
+  return BACKEND_URL || ''
 }
 
 function getAuthHeaders(token) {

@@ -459,6 +459,25 @@ def update_grade_scale(grade_scale_id: int, grade_scale_update: schemas.GradeSca
         return grade_scale
 
 
+def delete_grade_scale(grade_scale_id: int, current_user: models.User) -> bool:
+    sid = _get_school_id()
+    with Session(engine) as session:
+        grade_scale = session.get(models.GradeScale, grade_scale_id)
+        if not grade_scale or (sid is not None and grade_scale.school_id != sid):
+            return False
+        session.delete(grade_scale)
+        session.commit()
+        log_audit(
+            user_id=current_user.id,
+            school_id=sid,
+            action="delete",
+            resource="grade_scale",
+            resource_id=grade_scale_id,
+            details=f"Deleted grade scale: {grade_scale.name}",
+        )
+        return True
+
+
 # ========== GRADE SCALE RANGES ==========
 
 def create_grade_scale_range(range_in: schemas.GradeScaleRangeCreate, current_user: models.User) -> models.GradeScaleRange:
@@ -505,6 +524,25 @@ def update_grade_scale_range(range_id: int, range_update: schemas.GradeScaleRang
         session.commit()
         session.refresh(grade_range)
         return grade_range
+
+
+def delete_grade_scale_range(range_id: int, current_user: models.User) -> bool:
+    sid = _get_school_id()
+    with Session(engine) as session:
+        grade_range = session.get(models.GradeScaleRange, range_id)
+        if not grade_range or (sid is not None and grade_range.school_id != sid):
+            return False
+        session.delete(grade_range)
+        session.commit()
+        log_audit(
+            user_id=current_user.id,
+            school_id=sid,
+            action="delete",
+            resource="grade_scale_range",
+            resource_id=range_id,
+            details=f"Deleted grade scale range: {grade_range.grade}",
+        )
+        return True
 
 
 # ========== GPA ENGINE ==========
@@ -561,6 +599,25 @@ def update_gpa_engine_config(gpa_engine_id: int, gpa_update: schemas.GpaEngineCo
         return gpa_config
 
 
+def delete_gpa_engine_config(gpa_engine_id: int, current_user: models.User) -> bool:
+    sid = _get_school_id()
+    with Session(engine) as session:
+        gpa_config = session.get(models.GpaEngineConfig, gpa_engine_id)
+        if not gpa_config or (sid is not None and gpa_config.school_id != sid):
+            return False
+        session.delete(gpa_config)
+        session.commit()
+        log_audit(
+            user_id=current_user.id,
+            school_id=sid,
+            action="delete",
+            resource="gpa_engine_config",
+            resource_id=gpa_engine_id,
+            details=f"Deleted GPA engine config: {gpa_config.name}",
+        )
+        return True
+
+
 # ========== GPA GRADE MAPPING ==========
 
 def create_gpa_grade_mapping(mapping_in: schemas.GpaGradeMappingCreate, current_user: models.User) -> models.GpaGradeMapping:
@@ -607,6 +664,25 @@ def update_gpa_grade_mapping(mapping_id: int, mapping_update: schemas.GpaGradeMa
         session.commit()
         session.refresh(mapping)
         return mapping
+
+
+def delete_gpa_grade_mapping(mapping_id: int, current_user: models.User) -> bool:
+    sid = _get_school_id()
+    with Session(engine) as session:
+        mapping = session.get(models.GpaGradeMapping, mapping_id)
+        if not mapping or (sid is not None and mapping.school_id != sid):
+            return False
+        session.delete(mapping)
+        session.commit()
+        log_audit(
+            user_id=current_user.id,
+            school_id=sid,
+            action="delete",
+            resource="gpa_grade_mapping",
+            resource_id=mapping_id,
+            details=f"Deleted GPA grade mapping: {mapping.grade}",
+        )
+        return True
 
 
 # ========== SUBJECT CATEGORIES ==========

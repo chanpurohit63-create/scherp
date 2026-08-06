@@ -25,7 +25,9 @@ export default function TeacherHomeworkPage() {
 
   const loadHomework = async (classId) => {
     try {
-      const d = await listResources(auth.token, `portal/teacher/homework${classId ? `?class_id=${classId}` : ''}`)
+      const params = new URLSearchParams()
+      if (classId) params.append('class_id', classId)
+      const d = await listResources(auth.token, 'portal/teacher/homework', params.toString())
       setHomeworks(d || [])
     } catch (err) { console.error(err) }
   }

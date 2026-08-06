@@ -17,7 +17,9 @@ export default function TeacherMessagesPage() {
 
   const loadMessages = async () => {
     try {
-      const d = await listResources(auth.token, `portal/teacher/messages${search ? `?search=${search}` : ''}`)
+      const params = new URLSearchParams()
+      if (search) params.append('search', search)
+      const d = await listResources(auth.token, 'portal/teacher/messages', params.toString())
       setMessages(d.messages || [])
       setUnread(d.unread || 0)
     } catch (err) { console.error(err) }

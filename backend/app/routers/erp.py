@@ -2531,6 +2531,41 @@ def teacher_portal_classes(current_user=Depends(auth.require_roles("Teacher"))):
         return result
 
 
+@router.get("/portal/teacher/students")
+def teacher_portal_students(class_id: Optional[int] = None, search: Optional[str] = None, current_user=Depends(auth.require_roles("Teacher"))):
+    with Session(engine) as session:
+        teacher = session.exec(select(models.Teacher).where(models.Teacher.user_id == current_user.id)).first()
+        if not teacher:
+            raise HTTPException(404, "Teacher not found")
+        allocations = session.exec(select(models.SubjectAllocation).where(models.SubjectAllocation.teacher_id == teacher.id)).all()
+        class_ids = [a.class_id for a in allocations]
+        if not class_ids:
+            return []
+        query = select(models.Student).where(models.Student.school_id == current_user.school_id, models.Student.id.in_(
+            select(models.Enrollment.student_id).where(models.Enrollment.class_id.in_(class_ids))
+        ))
+        if class_id:
+            query = query.where(models.Student.id.in_(
+                select(models.Enrollment.student_id).where(models.Enrollment.class_id == class_id)
+            ))
+        students = session.exec(query).all()
+        result = []
+        for st in students:
+            user = session.get(models.User, st.user_id)
+            result.append({"student": st, "user": user})
+        return result
+
+
+@router.get("/portal/teacher/notices")
+def teacher_portal_notices(skip: int = 0, limit: int = 50, search: Optional[str] = None, current_user=Depends(auth.require_roles("Teacher"))):
+    with Session(engine) as session:
+        query = select(models.Notice).where(models.Notice.school_id == current_user.school_id)
+        if search:
+            query = query.where(models.Notice.title.contains(search))
+        notices = session.exec(query.order_by(models.Notice.created_on.desc()).offset(skip).limit(limit)).all()
+        return notices
+
+
 @router.get("/portal/teacher/classes/{class_id}/students")
 def teacher_class_students(class_id: int, search: Optional[str] = None, current_user=Depends(auth.require_roles("Teacher"))):
     with Session(engine) as session:

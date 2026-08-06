@@ -153,6 +153,19 @@ export default function SetupWizardPage() {
     }
   }
 
+  const resolveAssetUrl = (path) => {
+    if (!path) return null
+    if (path.startsWith('data:')) return path
+    // If path already starts with /static/, use it directly
+    if (path.startsWith('/static/') || path.startsWith('static/')) {
+      const cleanPath = path.startsWith('/') ? path : `/${path}`
+      return `${BACKEND_URL}${cleanPath}`
+    }
+    // Otherwise construct path from school_id and filename
+    const filename = path.split(/[\\/]/).pop()
+    return `${BACKEND_URL}/static/uploads/school_${auth.profile?.school_id || ''}/${filename}`
+  }
+
   const handleFinish = () => {
     toast.success('Setup complete! Redirecting to dashboard...')
     setTimeout(() => navigate('/dashboard'), 1500)
@@ -271,7 +284,7 @@ export default function SetupWizardPage() {
               <div style={{ textAlign: 'center', padding: 32, border: '2px dashed #e2e8f0', borderRadius: 12, background: '#f8fafc' }}>
                 {logoPath ? (
                   <div>
-                    <img src={`${BACKEND_URL}/static/uploads/${logoPath.split('/').pop()}`} alt="Logo" style={{ maxWidth: 200, maxHeight: 200, marginBottom: 16, borderRadius: 8 }} />
+                    <img src={resolveAssetUrl(logoPath)} alt="Logo" style={{ maxWidth: 200, maxHeight: 200, marginBottom: 16, borderRadius: 8 }} />
                     <p style={{ color: '#10b981', fontWeight: 600, marginBottom: 12 }}>✓ Logo uploaded</p>
                   </div>
                 ) : (

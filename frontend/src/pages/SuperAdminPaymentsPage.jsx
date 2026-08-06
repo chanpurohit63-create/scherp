@@ -18,8 +18,8 @@ export default function SuperAdminPaymentsPage() {
   const loadData = async () => {
     try {
       const [dashData, schoolsData] = await Promise.all([
-        listResources(auth.token, 'superadmin/platform/dashboard'),
-        listResources(auth.token, 'superadmin/schools?skip=0&limit=1000'),
+        listResources(auth.token, 'superadmin/platform/dashboard', 'skip=0&limit=100'),
+        listResources(auth.token, 'superadmin/schools', 'skip=0&limit=1000'),
       ])
       setDashboard(dashData)
       setSchools(schoolsData)

@@ -1,0 +1,440 @@
+[
+  {
+    "module": "AUTH",
+    "test": "Super Admin Login",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "module": "AUTH",
+    "test": "School Admin Login",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "module": "AUTH",
+    "test": "Teacher Login",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "module": "AUTH",
+    "test": "Student Login",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "module": "AUTH",
+    "test": "Parent Login",
+    "status": "PASS",
+    "detail": ""
+  },
+  {
+    "module": "SuperAdmin",
+    "test": "List Schools",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "SuperAdmin",
+    "test": "Platform Dashboard",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "SuperAdmin",
+    "test": "Audit Logs",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "SuperAdmin",
+    "test": "Subscription Plans",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "SuperAdmin",
+    "test": "School Detail",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "SuperAdmin",
+    "test": "School Statistics",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "SchoolAdmin",
+    "test": "Profile",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "SchoolAdmin",
+    "test": "Dashboard",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "SchoolAdmin",
+    "test": "Settings",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "SchoolAdmin",
+    "test": "Create Academic Year",
+    "status": "PASS",
+    "detail": "201 "
+  },
+  {
+    "module": "SchoolAdmin",
+    "test": "Read Academic Year",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "SchoolAdmin",
+    "test": "Update Academic Year",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "SchoolAdmin",
+    "test": "Delete Academic Year",
+    "status": "PASS",
+    "detail": "204 "
+  },
+  {
+    "module": "SchoolAdmin",
+    "test": "Create Class",
+    "status": "PASS",
+    "detail": "201 "
+  },
+  {
+    "module": "SchoolAdmin",
+    "test": "Update Class",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "SchoolAdmin",
+    "test": "Delete Class",
+    "status": "PASS",
+    "detail": "204 "
+  },
+  {
+    "module": "SchoolAdmin",
+    "test": "List Students",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "SchoolAdmin",
+    "test": "List Teachers",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "SchoolAdmin",
+    "test": "List Parents",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "SchoolAdmin",
+    "test": "List Subjects",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "SchoolAdmin",
+    "test": "List Sections",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "SchoolAdmin",
+    "test": "List Exams",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "SchoolAdmin",
+    "test": "List Exam Results",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "SchoolAdmin",
+    "test": "List Enrollments",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "SchoolAdmin",
+    "test": "List Fee Structures",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "SchoolAdmin",
+    "test": "List Payments",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "SchoolAdmin",
+    "test": "List Notices",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "SchoolAdmin",
+    "test": "List Events",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "SchoolAdmin",
+    "test": "List Certificates",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "SchoolAdmin",
+    "test": "List Attendances",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "SchoolAdmin",
+    "test": "List Homework",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "SchoolAdmin",
+    "test": "List Rooms",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "SchoolAdmin",
+    "test": "List Timetable",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "SchoolAdmin",
+    "test": "List Report Cards",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Teacher",
+    "test": "Profile",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Teacher",
+    "test": "Students Portal",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Teacher",
+    "test": "Notices Portal",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Teacher",
+    "test": "Dashboard Portal",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Teacher",
+    "test": "Classes Portal",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Teacher",
+    "test": "Exams Portal",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Teacher",
+    "test": "Homework Portal",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Teacher",
+    "test": "Calendar Portal",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Teacher",
+    "test": "Messages Portal",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Student",
+    "test": "Profile",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Student",
+    "test": "Dashboard Portal",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Student",
+    "test": "Attendance Portal",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Student",
+    "test": "Homework Portal",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Student",
+    "test": "Exams Portal",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Student",
+    "test": "Fees Portal",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Student",
+    "test": "Notices Portal",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Student",
+    "test": "Calendar Portal",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Student",
+    "test": "Documents Portal",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Student",
+    "test": "Messages Portal",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Parent",
+    "test": "Profile",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Parent",
+    "test": "Dashboard",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Parent",
+    "test": "Children",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Parent",
+    "test": "Attendance Portal",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Parent",
+    "test": "Homework Portal",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Parent",
+    "test": "Exams Portal",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Parent",
+    "test": "Fees Portal",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Parent",
+    "test": "Notices Portal",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Parent",
+    "test": "Calendar Portal",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Parent",
+    "test": "Messages Portal",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "Notifications",
+    "test": "Unread Count",
+    "status": "PASS",
+    "detail": "200 "
+  },
+  {
+    "module": "RBAC",
+    "test": "SchoolAdmin->SuperAdmin Blocked",
+    "status": "PASS",
+    "detail": "403 "
+  },
+  {
+    "module": "RBAC",
+    "test": "Student->Admin Blocked",
+    "status": "PASS",
+    "detail": "403 "
+  },
+  {
+    "module": "RBAC",
+    "test": "Teacher->ParentCreate Blocked",
+    "status": "PASS",
+    "detail": "403 "
+  },
+  {
+    "module": "API",
+    "test": "Invalid Token Test",
+    "status": "PASS",
+    "detail": "Correctly returned 401"
+  }
+]

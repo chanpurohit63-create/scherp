@@ -16,8 +16,9 @@ export default function SuperAdminAuditLogsPage() {
     try {
       const params = new URLSearchParams()
       if (actionFilter) params.append('action', actionFilter)
-      const query = params.toString()
-      const data = await listResources(auth.token, `superadmin/audit-logs${query ? '?' + query : ''}`)
+      params.append('skip', '0')
+      params.append('limit', '100')
+      const data = await listResources(auth.token, 'superadmin/audit-logs', params.toString())
       setLogs(data)
     } catch (err) {
       console.error(err)
