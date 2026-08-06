@@ -183,6 +183,14 @@ def parent_dashboard(parent_id: int, current_user=Depends(auth.require_roles(*AD
         return {"children": result}
 
 
+@router.put("/parents/{parent_id}", response_model=schemas.ParentRead)
+def update_parent(parent_id: int, parent_update: schemas.ParentUpdate, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
+    parent = update_resource(models.Parent, parent_id, parent_update.dict(exclude_unset=True))
+    if not parent:
+        raise HTTPException(status_code=404, detail="Parent not found")
+    return parent
+
+
 @router.delete("/parents/{parent_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_parent(parent_id: int, current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
     if not delete_resource(models.Parent, parent_id):
@@ -1048,6 +1056,31 @@ def list_notices(skip: int = 0, limit: int = 100, current_user=Depends(auth.requ
     return list_resource(models.Notice, skip=skip, limit=limit)
 
 
+@router.get("/notices/filter", response_model=List[schemas.NoticeRead])
+def filter_notices(
+    target_role: Optional[str] = None,
+    scheduled: Optional[bool] = None,
+    skip: int = 0,
+    limit: int = 100,
+    current_user=Depends(auth.require_roles(*ADMIN_ROLES, *ALL_ADMIN_ROLES)),
+):
+    with Session(engine) as session:
+        statement = select(models.Notice)
+        if target_role:
+            statement = statement.where(
+                or_(
+                    models.Notice.target_roles == "all",
+                    models.Notice.target_roles.contains(target_role),
+                )
+            )
+        if scheduled is True:
+            statement = statement.where(models.Notice.scheduled_for.isnot(None))
+        elif scheduled is False:
+            statement = statement.where(models.Notice.scheduled_for.is_(None))
+        statement = statement.order_by(models.Notice.created_on.desc()).offset(skip).limit(limit)
+        return session.exec(statement).all()
+
+
 @router.get("/notices/{notice_id}", response_model=schemas.NoticeRead)
 def get_notice(notice_id: int, current_user=Depends(auth.require_roles(*ADMIN_ROLES, *ALL_ADMIN_ROLES))):
     notice = get_resource(models.Notice, notice_id)
@@ -1580,31 +1613,6 @@ def _upload_settings_file(file: UploadFile, field_name: str) -> dict:
 
 
 # ========== NOTICE ENHANCEMENTS ==========
-@router.get("/notices/filter", response_model=List[schemas.NoticeRead])
-def filter_notices(
-    target_role: Optional[str] = None,
-    scheduled: Optional[bool] = None,
-    skip: int = 0,
-    limit: int = 100,
-    current_user=Depends(auth.require_roles(*ADMIN_ROLES, *ALL_ADMIN_ROLES)),
-):
-    with Session(engine) as session:
-        statement = select(models.Notice)
-        if target_role:
-            statement = statement.where(
-                or_(
-                    models.Notice.target_roles == "all",
-                    models.Notice.target_roles.contains(target_role),
-                )
-            )
-        if scheduled is True:
-            statement = statement.where(models.Notice.scheduled_for.isnot(None))
-        elif scheduled is False:
-            statement = statement.where(models.Notice.scheduled_for.is_(None))
-        statement = statement.order_by(models.Notice.created_on.desc()).offset(skip).limit(limit)
-        return session.exec(statement).all()
-
-
 @router.post("/notices/{notice_id}/attachments", status_code=status.HTTP_200_OK)
 async def upload_notice_attachment(notice_id: int, file: UploadFile = File(...), current_user=Depends(auth.require_roles(*ADMIN_ROLES))):
     notice = get_resource(models.Notice, notice_id)

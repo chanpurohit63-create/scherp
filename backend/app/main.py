@@ -14,7 +14,8 @@ from .notification_service import connection_manager
 app = FastAPI(title="School ERP - Backend (FastAPI)")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5175", "http://127.0.0.1:5175"],
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -22,9 +23,55 @@ app.add_middleware(
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 
+def seed_default_teacher_admin():
+    from . import models, auth
+    from .database import engine
+    from sqlmodel import Session, select
+
+    with Session(engine) as session:
+        existing_admin = session.exec(
+            select(models.User).where(models.User.email == "admin@schoolerp.local")
+        ).first()
+        if existing_admin:
+            return
+
+        school = session.exec(select(models.School).where(models.School.school_code == "DEMO")).first()
+        if not school:
+            school = models.School(
+                school_name="Demo School",
+                school_code="DEMO",
+                email="info@demoschool.local",
+                phone="000-000-0000",
+                address="123 Demo Street",
+                city="Demo City",
+                state="Demo State",
+                country="Demo Country",
+                postal_code="00000",
+                timezone="UTC",
+                currency="USD",
+                status="active",
+            )
+            session.add(school)
+            session.commit()
+            session.refresh(school)
+
+        admin_user = models.User(
+            email="admin@schoolerp.local",
+            full_name="Demo Admin",
+            hashed_password=auth.get_password_hash("admin"),
+            is_active=True,
+            role="School Admin",
+            school_id=school.id,
+        )
+        session.add(admin_user)
+        session.commit()
+        print("Seeded demo school and admin user: admin@schoolerp.local / admin")
+
+
 @app.on_event("startup")
 def on_startup():
     init_db()
+    seed_default_teacher_admin()
     os.makedirs("static/uploads", exist_ok=True)
 
 

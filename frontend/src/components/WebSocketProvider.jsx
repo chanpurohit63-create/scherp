@@ -8,19 +8,29 @@ export function WebSocketProvider({ children, onNotification }) {
   const { token, isAuthenticated } = useAuth()
   const wsRef = useRef(null)
   const reconnectTimeoutRef = useRef(null)
+  const connectTimeoutRef = useRef(null)
   const heartbeatIntervalRef = useRef(null)
   const reconnectAttemptsRef = useRef(0)
+  const manualDisconnectRef = useRef(false)
   const maxReconnectAttempts = 10
   const [isConnected, setIsConnected] = useState(false)
 
   const connect = useCallback(() => {
     if (!token || !isAuthenticated) return
+    if (wsRef.current && wsRef.current.readyState !== WebSocket.CLOSED && wsRef.current.readyState !== WebSocket.CLOSING) {
+      return
+    }
 
-    const wsUrl = `${BACKEND_URL.replace('http', 'ws')}/ws?token=${token}`
-    
+    const backendUrl = new URL(BACKEND_URL)
+    backendUrl.protocol = backendUrl.protocol === 'https:' ? 'wss:' : 'ws:'
+    backendUrl.pathname = '/ws'
+    backendUrl.searchParams.set('token', token)
+    const wsUrl = backendUrl.toString()
+
     try {
       const ws = new WebSocket(wsUrl)
       wsRef.current = ws
+      manualDisconnectRef.current = false
 
       ws.onopen = () => {
         console.log('WebSocket connected')
@@ -61,6 +71,10 @@ export function WebSocketProvider({ children, onNotification }) {
         setIsConnected(false)
         clearInterval(heartbeatIntervalRef.current)
 
+        if (manualDisconnectRef.current) {
+          return
+        }
+
         // Auto reconnect with exponential backoff
         if (reconnectAttemptsRef.current < maxReconnectAttempts) {
           const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000)
@@ -73,7 +87,6 @@ export function WebSocketProvider({ children, onNotification }) {
 
       ws.onerror = (error) => {
         console.error('WebSocket error:', error)
-        ws.close()
       }
     } catch (e) {
       console.error('WebSocket connection error:', e)
@@ -81,6 +94,8 @@ export function WebSocketProvider({ children, onNotification }) {
   }, [token, isAuthenticated, onNotification])
 
   const disconnect = useCallback(() => {
+    manualDisconnectRef.current = true
+    clearTimeout(connectTimeoutRef.current)
     clearTimeout(reconnectTimeoutRef.current)
     clearInterval(heartbeatIntervalRef.current)
     if (wsRef.current) {
@@ -92,7 +107,9 @@ export function WebSocketProvider({ children, onNotification }) {
 
   useEffect(() => {
     if (isAuthenticated && token) {
-      connect()
+      connectTimeoutRef.current = window.setTimeout(() => {
+        connect()
+      }, 0)
     } else {
       disconnect()
     }

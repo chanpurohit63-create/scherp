@@ -1,0 +1,839 @@
+{
+  "results": [
+    {
+      "module": "Schools",
+      "test": "List Schools",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Schools",
+      "test": "Find Greenwood",
+      "status": "PASS",
+      "detail": "ID=3"
+    },
+    {
+      "module": "Schools",
+      "test": "Get School",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Schools",
+      "test": "Create School",
+      "status": "PASS",
+      "detail": "ID=5"
+    },
+    {
+      "module": "Schools",
+      "test": "Update School",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Schools",
+      "test": "Search",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Schools",
+      "test": "Filter",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Schools",
+      "test": "Pagination",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Schools",
+      "test": "Form Validation",
+      "status": "PASS",
+      "detail": "422"
+    },
+    {
+      "module": "Schools",
+      "test": "Delete School",
+      "status": "PASS",
+      "detail": "204"
+    },
+    {
+      "module": "Students",
+      "test": "List",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Students",
+      "test": "Data Present",
+      "status": "PASS",
+      "detail": "11 students"
+    },
+    {
+      "module": "Students",
+      "test": "Get Single",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Students",
+      "test": "Create",
+      "status": "PASS",
+      "detail": "ID=12"
+    },
+    {
+      "module": "Students",
+      "test": "Update",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Students",
+      "test": "Search",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Students",
+      "test": "Filter",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Students",
+      "test": "Pagination",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Students",
+      "test": "Form Validation",
+      "status": "PASS",
+      "detail": "422"
+    },
+    {
+      "module": "Students",
+      "test": "Delete",
+      "status": "PASS",
+      "detail": "204"
+    },
+    {
+      "module": "Teachers",
+      "test": "List",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Teachers",
+      "test": "Data Present",
+      "status": "PASS",
+      "detail": "5 teachers"
+    },
+    {
+      "module": "Teachers",
+      "test": "Get Single",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Teachers",
+      "test": "Create",
+      "status": "PASS",
+      "detail": "ID=6"
+    },
+    {
+      "module": "Teachers",
+      "test": "Update",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Teachers",
+      "test": "Search",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Teachers",
+      "test": "Filter",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Teachers",
+      "test": "Pagination",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Teachers",
+      "test": "Form Validation",
+      "status": "PASS",
+      "detail": "422"
+    },
+    {
+      "module": "Teachers",
+      "test": "Delete",
+      "status": "PASS",
+      "detail": "204"
+    },
+    {
+      "module": "Parents",
+      "test": "List",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Parents",
+      "test": "Data Present",
+      "status": "PASS",
+      "detail": "10 parents"
+    },
+    {
+      "module": "Parents",
+      "test": "Get Single",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Parents",
+      "test": "Create",
+      "status": "PASS",
+      "detail": "ID=11"
+    },
+    {
+      "module": "Parents",
+      "test": "Update",
+      "status": "FAIL",
+      "detail": "405"
+    },
+    {
+      "module": "Parents",
+      "test": "Form Validation",
+      "status": "PASS",
+      "detail": "422"
+    },
+    {
+      "module": "Parents",
+      "test": "Delete",
+      "status": "PASS",
+      "detail": "204"
+    },
+    {
+      "module": "Classes",
+      "test": "List",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Classes",
+      "test": "Data Present",
+      "status": "PASS",
+      "detail": "10 classes"
+    },
+    {
+      "module": "Classes",
+      "test": "Get Single",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Classes",
+      "test": "Create",
+      "status": "PASS",
+      "detail": "ID=11"
+    },
+    {
+      "module": "Classes",
+      "test": "Update",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Classes",
+      "test": "Form Validation",
+      "status": "PASS",
+      "detail": "422"
+    },
+    {
+      "module": "Classes",
+      "test": "Delete",
+      "status": "PASS",
+      "detail": "204"
+    },
+    {
+      "module": "Sections",
+      "test": "List",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Sections",
+      "test": "Data Present",
+      "status": "PASS",
+      "detail": "12 sections"
+    },
+    {
+      "module": "Sections",
+      "test": "Get Single",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Sections",
+      "test": "Create",
+      "status": "PASS",
+      "detail": "ID=13"
+    },
+    {
+      "module": "Sections",
+      "test": "Update",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Sections",
+      "test": "Form Validation",
+      "status": "PASS",
+      "detail": "422"
+    },
+    {
+      "module": "Sections",
+      "test": "Delete",
+      "status": "PASS",
+      "detail": "204"
+    },
+    {
+      "module": "Subjects",
+      "test": "List",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Subjects",
+      "test": "Data Present",
+      "status": "PASS",
+      "detail": "24 subjects"
+    },
+    {
+      "module": "Subjects",
+      "test": "Get Single",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Subjects",
+      "test": "Create",
+      "status": "PASS",
+      "detail": "ID=25"
+    },
+    {
+      "module": "Subjects",
+      "test": "Update",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Subjects",
+      "test": "Form Validation",
+      "status": "PASS",
+      "detail": "422"
+    },
+    {
+      "module": "Subjects",
+      "test": "Delete",
+      "status": "PASS",
+      "detail": "204"
+    },
+    {
+      "module": "Academic Years",
+      "test": "List",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Academic Years",
+      "test": "Data Present",
+      "status": "PASS",
+      "detail": "5 years"
+    },
+    {
+      "module": "Academic Years",
+      "test": "Get Single",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Academic Years",
+      "test": "Create",
+      "status": "PASS",
+      "detail": "ID=6"
+    },
+    {
+      "module": "Academic Years",
+      "test": "Update",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Academic Years",
+      "test": "Form Validation",
+      "status": "PASS",
+      "detail": "422"
+    },
+    {
+      "module": "Academic Years",
+      "test": "Delete",
+      "status": "PASS",
+      "detail": "204"
+    },
+    {
+      "module": "Attendance",
+      "test": "List",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Attendance",
+      "test": "Data Present",
+      "status": "PASS",
+      "detail": "8 records"
+    },
+    {
+      "module": "Attendance",
+      "test": "Get Single",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Attendance",
+      "test": "Create",
+      "status": "PASS",
+      "detail": "ID=9"
+    },
+    {
+      "module": "Attendance",
+      "test": "Update",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Attendance",
+      "test": "Form Validation",
+      "status": "PASS",
+      "detail": "422"
+    },
+    {
+      "module": "Attendance",
+      "test": "Delete",
+      "status": "PASS",
+      "detail": "204"
+    },
+    {
+      "module": "Homework",
+      "test": "List",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Homework",
+      "test": "Data Present",
+      "status": "PASS",
+      "detail": "2 records"
+    },
+    {
+      "module": "Homework",
+      "test": "Get Single",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Homework",
+      "test": "Create",
+      "status": "PASS",
+      "detail": "ID=3"
+    },
+    {
+      "module": "Homework",
+      "test": "Update",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Homework",
+      "test": "Form Validation",
+      "status": "PASS",
+      "detail": "422"
+    },
+    {
+      "module": "Homework",
+      "test": "Delete",
+      "status": "PASS",
+      "detail": "204"
+    },
+    {
+      "module": "Exams",
+      "test": "List",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Exams",
+      "test": "Data Present",
+      "status": "PASS",
+      "detail": "5 exams"
+    },
+    {
+      "module": "Exams",
+      "test": "Get Single",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Exams",
+      "test": "Create",
+      "status": "PASS",
+      "detail": "ID=6"
+    },
+    {
+      "module": "Exams",
+      "test": "Update",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Exams",
+      "test": "Form Validation",
+      "status": "PASS",
+      "detail": "422"
+    },
+    {
+      "module": "Exams",
+      "test": "Delete",
+      "status": "PASS",
+      "detail": "204"
+    },
+    {
+      "module": "Fees",
+      "test": "List Structures",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Fees",
+      "test": "Data Present",
+      "status": "PASS",
+      "detail": "7 structures"
+    },
+    {
+      "module": "Fees",
+      "test": "Create Structure",
+      "status": "PASS",
+      "detail": "ID=8"
+    },
+    {
+      "module": "Fees",
+      "test": "Update Structure",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Fees",
+      "test": "List Assignments",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Fees",
+      "test": "Create Assignment",
+      "status": "PASS",
+      "detail": "ID=16"
+    },
+    {
+      "module": "Fees",
+      "test": "Update Assignment",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Fees",
+      "test": "Delete Assignment",
+      "status": "PASS",
+      "detail": "204"
+    },
+    {
+      "module": "Fees",
+      "test": "Form Validation",
+      "status": "PASS",
+      "detail": "422"
+    },
+    {
+      "module": "Fees",
+      "test": "Delete Structure",
+      "status": "PASS",
+      "detail": "204"
+    },
+    {
+      "module": "Payments",
+      "test": "List",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Payments",
+      "test": "Data Present",
+      "status": "PASS",
+      "detail": "3 payments"
+    },
+    {
+      "module": "Payments",
+      "test": "Get Single",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Payments",
+      "test": "Create",
+      "status": "PASS",
+      "detail": "ID=4"
+    },
+    {
+      "module": "Payments",
+      "test": "Update",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Payments",
+      "test": "Form Validation",
+      "status": "PASS",
+      "detail": "422"
+    },
+    {
+      "module": "Payments",
+      "test": "Delete",
+      "status": "PASS",
+      "detail": "204"
+    },
+    {
+      "module": "Timetable",
+      "test": "List",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Timetable",
+      "test": "Data Present",
+      "status": "FAIL",
+      "detail": "0 entries"
+    },
+    {
+      "module": "Timetable",
+      "test": "Create",
+      "status": "FAIL",
+      "detail": "ID=None"
+    },
+    {
+      "module": "Timetable",
+      "test": "Form Validation",
+      "status": "PASS",
+      "detail": "422"
+    },
+    {
+      "module": "Report Cards",
+      "test": "List",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Report Cards",
+      "test": "Data Present",
+      "status": "FAIL",
+      "detail": "0 cards"
+    },
+    {
+      "module": "Report Cards",
+      "test": "Generate",
+      "status": "FAIL",
+      "detail": "404"
+    },
+    {
+      "module": "Report Cards",
+      "test": "Stats",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Certificates",
+      "test": "List",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Certificates",
+      "test": "Data Present",
+      "status": "FAIL",
+      "detail": "0 certificates"
+    },
+    {
+      "module": "Certificates",
+      "test": "Create",
+      "status": "PASS",
+      "detail": "ID=1"
+    },
+    {
+      "module": "Certificates",
+      "test": "Get Single",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Certificates",
+      "test": "Update",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Certificates",
+      "test": "Form Validation",
+      "status": "PASS",
+      "detail": "422"
+    },
+    {
+      "module": "Certificates",
+      "test": "Delete",
+      "status": "PASS",
+      "detail": "204"
+    },
+    {
+      "module": "Notices",
+      "test": "List",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Notices",
+      "test": "Data Present",
+      "status": "PASS",
+      "detail": "3 notices"
+    },
+    {
+      "module": "Notices",
+      "test": "Get Single",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Notices",
+      "test": "Create",
+      "status": "PASS",
+      "detail": "ID=4"
+    },
+    {
+      "module": "Notices",
+      "test": "Update",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Notices",
+      "test": "Filter",
+      "status": "FAIL",
+      "detail": "422"
+    },
+    {
+      "module": "Notices",
+      "test": "Form Validation",
+      "status": "PASS",
+      "detail": "422"
+    },
+    {
+      "module": "Notices",
+      "test": "Delete",
+      "status": "PASS",
+      "detail": "204"
+    },
+    {
+      "module": "Events",
+      "test": "List",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Events",
+      "test": "Data Present",
+      "status": "PASS",
+      "detail": "1 events"
+    },
+    {
+      "module": "Events",
+      "test": "Get Single",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Events",
+      "test": "Create",
+      "status": "PASS",
+      "detail": "ID=2"
+    },
+    {
+      "module": "Events",
+      "test": "Update",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Events",
+      "test": "Form Validation",
+      "status": "PASS",
+      "detail": "422"
+    },
+    {
+      "module": "Events",
+      "test": "Delete",
+      "status": "PASS",
+      "detail": "204"
+    },
+    {
+      "module": "Settings",
+      "test": "Get",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Settings",
+      "test": "Update",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Settings",
+      "test": "Dashboard",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Settings",
+      "test": "Analytics",
+      "status": "PASS",
+      "detail": "200"
+    },
+    {
+      "module": "Settings",
+      "test": "Global Search",
+      "status": "PASS",
+      "detail": "200"
+    }
+  ],
+  "summary": {
+    "total": 138,
+    "pass": 131,
+    "fail": 7,
+    "warn": 0,
+    "modules_tested": 19
+  }
+}

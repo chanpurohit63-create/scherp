@@ -1,7 +1,7 @@
 from typing import Optional, List, Dict, Any
 from datetime import datetime, date
 from sqlmodel import Session, select, func
-from sqlalchemy import Integer
+from sqlalchemy import Integer, case
 
 from . import models, schemas
 from .database import engine
@@ -731,13 +731,21 @@ def get_timetable_dashboard(school_id: Optional[int] = None) -> Dict[str, Any]:
         ).one() or 0
         free_rooms = total_rooms - occupied_rooms
 
+        duration = (
+            func.cast(func.substring(models.Timetable.end_time, 1, 2), Integer) * 60
+            + func.cast(func.substring(models.Timetable.end_time, 4, 2), Integer)
+            - func.cast(func.substring(models.Timetable.start_time, 1, 2), Integer) * 60
+            - func.cast(func.substring(models.Timetable.start_time, 4, 2), Integer)
+        )
         total_teaching_hours = session.exec(
-            select(func.sum(func.greatest(0, func.coalesce(
-                (func.cast(func.substring(models.Timetable.end_time, 1, 2), Integer) * 60
-                 + func.cast(func.substring(models.Timetable.end_time, 4, 2), Integer)
-                 - func.cast(func.substring(models.Timetable.start_time, 1, 2), Integer) * 60
-                 - func.cast(func.substring(models.Timetable.start_time, 4, 2), Integer)), 0)
-            ))).where(models.Timetable.school_id == sid)
+            select(
+                func.sum(
+                    case(
+                        (duration > 0, duration),
+                        else_=0,
+                    )
+                )
+            ).where(models.Timetable.school_id == sid)
         ).one() or 0
 
         avg_teaching_hours = round(total_teaching_hours / total_teachers, 2) if total_teachers > 0 else 0.0

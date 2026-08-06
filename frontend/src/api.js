@@ -366,3 +366,4 @@ export async function updateGradingRule(token, id, data) {
 export async function deleteGradingRule(token, id) {
   return deleteResource(token, 'grading-rules', id)
 }
+
